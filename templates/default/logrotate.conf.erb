@@ -1,0 +1,12 @@
+<%= node['ec2dnsserver']['log']['file'] %> {
+  rotate <%= node['ec2dnsserver']['log']['versions'] %>
+  size <%= node['ec2dnsserver']['log']['size'] %>
+  missingok
+  notifempty
+  compress
+  delaycompress
+  sharedscripts
+  postrotate
+    reload <%= node['ec2dnsserver']['log']['logger'] %> 2>&1 || true
+  endscript
+}

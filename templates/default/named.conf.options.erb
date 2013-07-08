@@ -1,0 +1,30 @@
+options {
+  directory "<%= node['ec2dnsserver']['cache_dir'] %>";
+  version "undisclosed";
+  allow-transfer { "none"; };
+  allow-recursion { 10.0.0.0/8; };
+  forwarders {
+    <% node['ec2dnsserver']['forwarders'].each do |forwarder| -%>
+    <%= forwarder %>;
+    <% end -%>
+  };
+  dnssec-validation auto;
+  auth-nxdomain no;
+  listen-on-v6 { none; };
+};
+
+logging {
+  channel main_log {
+    syslog <%= node['ec2dnsserver']['log']['facility'] %>;
+    severity <%= node['ec2dnsserver']['log']['severity'] %>;
+    print-severity yes;
+    print-time no;
+    print-category yes;
+  };
+  category default {
+    main_log;
+  };
+  category queries {
+    main_log;
+  };
+};

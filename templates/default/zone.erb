@@ -1,0 +1,32 @@
+<% require 'ipaddr' -%>
+$TTL <%= @default_ttl %>
+$ORIGIN <%= @apex %>.
+@ <%= @default_ttl %> IN SOA <%= @source_host %>.<%= @suffix %>. <%= @contact_email %>. (
+  <%= @serial_number %>
+  <%= @refresh_time %>
+  <%= @retry_time %>
+  <%= @expire_time %>
+  <%= @min_ttl %>
+)
+
+ NS <%= node.name %>.<%= @suffix %>.
+
+<% if @ptr -%>
+
+<%= IPAddr.new(node['ipaddress']).reverse.sub(/\.?#{Regexp.escape(@apex)}$/,'') %> IN PTR <%= node.name %>.<%= @suffix %>
+
+<% @hosts.each do |rr,val| -%>
+<% if rr != node.name -%>
+<%= IPAddr.new(val).reverse.sub(/\.?#{Regexp.escape(@apex)}$/,'') %> IN PTR <%= rr %>.<%= @suffix %>.
+<% end -%>
+<% end -%>
+<% else -%>
+
+<%= node.name %> IN A <%= node['ipaddress'] %>
+
+<% @hosts.each do |rr,val| -%>
+<% if rr != node.name -%>
+<%= rr %> IN A <%= val %>
+<% end -%>
+<% end -%>
+<% end -%>

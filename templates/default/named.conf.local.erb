@@ -1,0 +1,10 @@
+//
+// Zones file maintained by Chef.  Do not edit manually.
+// 
+<% node['ec2dnsserver']['zones'].each do |zone| -%>
+zone "<%= zone['apex'] %>" {
+  type master;
+  file "<%= node['ec2dnsserver']['zones_dir'] %>/db.<%= zone['apex'] %>";
+};
+
+<% end -%>
