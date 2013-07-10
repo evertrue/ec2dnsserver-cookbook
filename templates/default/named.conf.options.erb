@@ -8,9 +8,11 @@ options {
     <%= forwarder %>;
     <% end -%>
   };
-  dnssec-validation auto;
+  dnssec-validation <%= node['ec2dnsserver']['dnssec_validation'] -%>;
   auth-nxdomain no;
+  <% unless node['ec2dnsserver']['enable-ipv6'] -%>
   listen-on-v6 { none; };
+  <% end -%>
 };
 
 logging {
@@ -24,7 +26,9 @@ logging {
   category default {
     main_log;
   };
+  <% if node['ec2dnsserver']['log']['log_queries'] -%>
   category queries {
     main_log;
   };
+  <% end -%>
 };
