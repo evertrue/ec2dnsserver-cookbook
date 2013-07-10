@@ -2,7 +2,7 @@ options {
   directory "<%= node['ec2dnsserver']['cache_dir'] %>";
   version "undisclosed";
   allow-transfer { "none"; };
-  recursion yes;
+  allow-recursion { 10/8; localnets; localhost; }
   forwarders {
     <% node['ec2dnsserver']['forwarders'].each do |forwarder| -%>
     <%= forwarder %>;
