@@ -9,6 +9,8 @@ end
 
 
 # TODO: Remove this once the gem_hell cookbook is ready to roll
-chef_gem "fog" do
+g = chef_gem "fog" do
   action :nothing
 end
+
+g.run_action(:install)
