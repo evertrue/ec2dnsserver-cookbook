@@ -21,6 +21,13 @@ service node['ec2dnsserver']['service_name'] do
   action :nothing
 end
 
+template "/etc/dhcp/dhclient-exit-hooks.d/set-bind-forwarders" do
+  source "set-bind-forwarders.erb"
+  owner "root"
+  group "root"
+  mode 00644
+end
+
 template "#{node['ec2dnsserver']['config_dir']}/named.conf.options" do
   source "named.conf.options.erb"
   owner "root"

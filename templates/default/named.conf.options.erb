@@ -3,11 +3,15 @@ options {
   version "undisclosed";
   allow-transfer { "none"; };
   allow-recursion { 10/8; localnets; localhost; };
+  <% if node['ec2dnsserver']['forwarders'] -%>
   forwarders {
     <% node['ec2dnsserver']['forwarders'].each do |forwarder| -%>
     <%= forwarder %>;
     <% end -%>
   };
+  <% else -%>
+  include "<%= node['ec2dnsserver']['config_dir'] %>/named.conf.forwarders";
+  <% end -%>
   dnssec-validation <%= node['ec2dnsserver']['dnssec_validation'] -%>;
   auth-nxdomain no;
   <% unless node['ec2dnsserver']['enable-ipv6'] -%>

@@ -1,0 +1,31 @@
+function log {
+
+  if [ -z "${1}" ]; then
+    msg=`cat -`
+  else
+    msg="${1}"
+  fi
+
+  logger -p daemon.info -t "${0}" -- "${msg}"
+
+}
+
+case $reason in
+  REBOOT|BOUND|RENEW|REBIND)
+
+  log "Setting new DNS forwarders: $new_domain_name_servers (reason: $reason)"
+
+  cat > "<%= node['ec2dnsserver']['config_dir'] %>/named.conf.forwarders" << EOF
+forwarders {
+  `echo -n "$new_domain_name_servers" | sed 's/$/;/' | sed 's/\ /;\n  /g'`
+};
+EOF
+  service <%= node['ec2dnsserver']['service_name'] %> restart
+  ;;
+
+  *)
+  
+  log "dhclient ran but reason ($reason) was not one of REBOOT, BOUND, RENEW, or REBIND"
+  ;;
+
+esac

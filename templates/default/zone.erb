@@ -13,7 +13,7 @@ $ORIGIN <%= @apex %>.
 
 <% if @ptr -%>
 
-<%= IPAddr.new(node['ipaddress']).reverse.sub(/\.?#{Regexp.escape(@apex)}$/,'') %> IN PTR <%= node.name %>.<%= @suffix %>
+<%= IPAddr.new(node['ipaddress']).reverse.sub(/\.?#{Regexp.escape(@apex)}$/,'') %> IN PTR <%= node.name %>.<%= @suffix %>.
 
 <% @hosts.each do |rr,val| -%>
 <% if rr != node.name -%>
