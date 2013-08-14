@@ -1,3 +1,8 @@
+# Update the chef-client refresh interval so that find new nodes pretty
+# promptly after they're spun up.
+set["chef_client"]["interval"] = "300"
+set["chef_client"]["splay"] = "180"
+
 default['ec2dnsserver']['aws_api_user'] = "Ec2DnsServer"
 default['ec2dnsserver']['vpc'] = nil
 default['ec2dnsserver']['config_dir'] = "/etc/bind"

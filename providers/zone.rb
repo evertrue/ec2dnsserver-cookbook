@@ -1,3 +1,5 @@
+use_inline_resources
+
 action :create do
   dns_server = Chef::Recipe::Ec2DnsServer.new(node)
   hosts = dns_server.get_names_with_ips(new_resource.vpc)
@@ -72,8 +74,6 @@ action :create do
     )
     notifies :create, "template[#{new_resource.path}]"
   end
-
-  new_resource.updated_by_last_action(t.updated_by_last_action?)
 
 end
 
