@@ -1,3 +1,7 @@
+## 1.0.10:
+
+* Only display "forwarders" section in named.conf if "forwarders" array has non-zero value
+
 ## 1.0.9:
 
 * Started doing a changelog

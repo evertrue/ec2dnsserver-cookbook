@@ -71,9 +71,35 @@ Vagrant.configure("2") do |config|
   # config.berkshelf.except = []
 
   config.vm.provision :shell, :inline => "curl -s -L https://www.opscode.com/chef/install.sh | sudo bash"
+  config.vm.provision :shell, :inline => "sudo mkdir -p /etc/bind && sudo bash -c \"echo 'forwarders { 10.0.0.2; };' > /etc/bind/named.conf.forwarders\""
+
+  if ENV['CHEF_REPO']
+    chef_repo = ENV['CHEF_REPO']
+  else
+    raise "CHEF_REPO is not defined"
+  end
 
   config.vm.provision :chef_solo do |chef|
-    chef.json = {}
+    chef.json = {
+      "ec2dnsserver" => {
+        "vpc" => "vpc-ca7dcfa1",
+        "zones" => [
+          {
+            'apex' => 'priv.evertrue.com',
+            'ptr_zone' => false,
+            'suffix' => 'priv.evertrue.com'
+          },
+          {
+            'apex' => '10.in-addr.arpa',
+            'ptr_zone' => true,
+            'suffix' => 'priv.evertrue.com'
+          }
+        ]
+      }
+    }
+    chef.log_level = :debug
+    chef.data_bags_path = "#{chef_repo}/data_bags"
+    chef.encrypted_data_bag_secret_key_path = "#{ENV['HOME']}/.chef/encrypted_data_bag_secret"
 
     chef.run_list = [
         "recipe[ec2dnsserver::default]"
