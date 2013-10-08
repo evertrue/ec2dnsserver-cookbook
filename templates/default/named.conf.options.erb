@@ -3,22 +3,11 @@ options {
   version "undisclosed";
   allow-transfer { "none"; };
   allow-recursion { 10/8; localnets; localhost; };
-  <%
-    if node['ec2dnsserver']['forwarders'] &&
-      node['ec2dnsserver']['forwarders'] != []
-  -%>
   forwarders {
     <% node['ec2dnsserver']['forwarders'].each do |forwarder| -%>
     <%= forwarder %>;
     <% end -%>
   };
-  <%
-    else
-  -%>
-  include "<%= node['ec2dnsserver']['config_dir'] %>/named.conf.forwarders";
-  <%
-    end
-  -%>
   dnssec-validation <%= node['ec2dnsserver']['dnssec_validation'] -%>;
   auth-nxdomain no;
   <% unless node['ec2dnsserver']['enable-ipv6'] -%>
@@ -38,8 +27,22 @@ logging {
     main_log;
   };
   <% if node['ec2dnsserver']['log']['log_queries'] -%>
+  channel query_log_file {
+    file "/var/log/named/query.log";
+    versions 10;
+    size 25m;
+    print-time yes;
+  };
+  channel query_syslog {
+    syslog <%= node['ec2dnsserver']['log']['facility'] %>;
+    severity debug;
+    versions 10;
+    size 25m;
+    print-time yes;
+  };
   category queries {
-    main_log;
+    query_log_file;
+    query_syslog;
   };
   <% end -%>
 };

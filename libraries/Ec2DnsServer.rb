@@ -20,7 +20,7 @@ class Chef::Recipe::Ec2DnsServer
 
   end
 
-  def get_names_with_ips(vpc = nil)
+  def get_names_with_ips(vpc = nil, avoid_subnets = [])
 
     require 'fog'
 
@@ -36,7 +36,14 @@ class Chef::Recipe::Ec2DnsServer
 
     h = Hash.new
     conn.servers.all(filter).map do |s|
-      h[s.tags["Name"]] = s.private_ip_address if s.tags["Name"]
+      if s.tags["Name"]
+        h[s.tags["Name"]] = s.network_interfaces.reject { |ni|
+          avoid_subnets.include?ni["subnetId"]}.reject { |ni|
+            ni == {}
+          }.map { |ni|
+            conn.network_interfaces.get(ni["networkInterfaceId"]).private_ip_address
+          }.first || s.private_ip_address
+      end
     end
 
     h

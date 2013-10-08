@@ -1,3 +1,10 @@
+## 1.0.11:
+
+* Don't try to use IP addresses belonging to NICs on the "avoid subnets" list (prevents public subnets from receiving DNS entries)
+* Break out query log (if enabled) into a separate non-syslog file, in addition to sending it over the syslog link.
+* Give up on using externally generated forwarders file
+* Set more permissive mode on log dir
+
 ## 1.0.10:
 
 * Only display "forwarders" section in named.conf if "forwarders" array has non-zero value

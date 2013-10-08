@@ -2,12 +2,12 @@ use_inline_resources
 
 action :create do
   dns_server = Chef::Recipe::Ec2DnsServer.new(node)
-  hosts = dns_server.get_names_with_ips(new_resource.vpc)
+  hosts = dns_server.get_names_with_ips(new_resource.vpc,new_resource.avoid_subnets)
 
   # In the template, the source host and the apex are both supposed
-  # to end with dots in SOME places in the template. We're not going 
-  # to assume the recipe writer knows how we're going to deal with 
-  # this, so we'll just always remove the dot and add it later if we 
+  # to end with dots in SOME places in the template. We're not going
+  # to assume the recipe writer knows how we're going to deal with
+  # this, so we'll just always remove the dot and add it later if we
   # need it.
 
   source_host = new_resource.source_host.sub(/\.$/,'')
@@ -45,12 +45,12 @@ action :create do
   # This next bit seems like a kludge (and it is) but the purpose of it
   # is to ONLY update the zone file when there is an actual zone
   # change (rather than every time chef-client runs), while still using
-  # Time.now.to_i to generate the zone serial number.  Since we're 
-  # treating the serial number as a template variable, chef would normally 
-  # try to update this template (and thus the serial number) every time it 
-  # runs.  Instead we have a second "dummy" file tied to the same exact 
-  # same variables (minus the serial number) that notifies the "real" 
-  # template whenever it gets updated, and otherwise the real template 
+  # Time.now.to_i to generate the zone serial number.  Since we're
+  # treating the serial number as a template variable, chef would normally
+  # try to update this template (and thus the serial number) every time it
+  # runs.  Instead we have a second "dummy" file tied to the same exact
+  # same variables (minus the serial number) that notifies the "real"
+  # template whenever it gets updated, and otherwise the real template
   # doesn't update (so the serial number doesn't change).
   # Nice, huh? ;-)
   #   -- eric.herot@evertrue.com

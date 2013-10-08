@@ -1,5 +1,7 @@
+$DirCreateMode 0775
+$DirGroup <%= node['ec2dnsserver']['group'] %>
 $FileCreateMode 0644
 
 $template BindLog,"%timegenerated:::date-rfc3339% <f:%syslogfacility-text%> <s:%syslogseverity-text%> <t:%syslogtag%> <PID:%PROCID%> %msg%\n"
-  
+
 :programname, isequal, "named" <%= node['ec2dnsserver']['log']['file'] %>;BindLog
