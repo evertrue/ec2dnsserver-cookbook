@@ -32,6 +32,8 @@ class Chef::Recipe::Ec2DnsServer
       :aws_secret_access_key => aws_keys['secret_access_key']
     )
 
+    Chef::Log.info("Avoiding these subnets: #{avoid_subnets.join(',')}")
+
     filter = { 'vpc-id' => vpc } if vpc
 
     h = Hash.new
