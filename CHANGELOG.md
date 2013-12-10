@@ -1,3 +1,11 @@
+## 1.0.13:
+
+* Pass avoid_subnets to ec2 zone resource
+
+## 1.0.12:
+
+* log avoid_subnets value
+
 ## 1.0.11:
 
 * Don't try to use IP addresses belonging to NICs on the "avoid subnets" list (prevents public subnets from receiving DNS entries)

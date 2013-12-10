@@ -3,7 +3,7 @@
 # Recipe:: default
 #
 # Copyright (C) 2013 EverTrue, Inc.
-# 
+#
 # All rights reserved - Do Not Redistribute
 #
 include_recipe "ec2dnsserver::fog"
@@ -19,6 +19,17 @@ end
 service node['ec2dnsserver']['service_name'] do
   supports :status => true, :restart => true, :reload => true
   action :nothing
+end
+
+# The following should really only be necessary to get this to
+# converge on a vagrant box.
+directory "/etc/dhcp/dhclient-exit-hooks.d" do
+  owner "root"
+  group "root"
+  mode 00755
+  action :create
+  recursive true
+  not_if { node['ec2'] }
 end
 
 template "/etc/dhcp/dhclient-exit-hooks.d/set-bind-forwarders" do
@@ -49,6 +60,7 @@ node['ec2dnsserver']['zones'].each do |zone|
     vpc node['ec2dnsserver']['vpc']
     ptr zone['ptr_zone']
     suffix zone['suffix']
+    avoid_subnets node['ec2dnsserver']['avoid_subnets']
     contact_email node['ec2dnsserver']['contact_email']
     path "#{node['ec2dnsserver']['zones_dir']}/db.#{zone['apex']}"
     notifies :run, "execute[reload_zones]"
