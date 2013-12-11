@@ -53,7 +53,7 @@ action :create do
   # template whenever it gets updated, and otherwise the real template
   # doesn't update (so the serial number doesn't change).
   # Nice, huh? ;-)
-  #   -- eric.herot@evertrue.com
+  #   -- devops@evertrue.com
 
   t = template "#{Chef::Config[:file_cache_path]}/ec2dnsserver/zones_without_serials/#{apex}.zone" do
     source "zone.erb"

@@ -14,4 +14,4 @@ The Fog gem (to call the EC2 API)
 
 # Author
 
-Author:: EverTrue, Inc. (<eric.herot@evertrue.com>)
+Author:: EverTrue, Inc. (<devops@evertrue.com>)
