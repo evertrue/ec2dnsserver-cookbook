@@ -1,3 +1,7 @@
+## 1.1.0:
+
+* Add recursion clients parameter
+
 ## 1.0.13:
 
 * Pass avoid_subnets to ec2 zone resource
