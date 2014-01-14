@@ -6,7 +6,7 @@
 #
 # All rights reserved - Do Not Redistribute
 #
-include_recipe "ec2dnsserver::fog"
+include_recipe "et_fog"
 include_recipe "ec2dnsserver::#{node['ec2dnsserver']['log']['logger']}"
 
 package "bind9"

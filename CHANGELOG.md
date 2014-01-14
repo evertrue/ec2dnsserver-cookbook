@@ -1,3 +1,8 @@
+## 1.1.1:
+
+* Use external fog cookbook
+* Add recursion clients default null value
+
 ## 1.1.0:
 
 * Add recursion clients parameter

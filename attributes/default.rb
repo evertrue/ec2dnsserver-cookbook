@@ -30,3 +30,5 @@ default['ec2dnsserver']['service_name'] = value_for_platform(
 )
 default['ec2dnsserver']['zones'] = []
 default['ec2dnsserver']['avoid_subnets'] = []
+
+default['ec2dnsserver']['recursion_clients'] = []
