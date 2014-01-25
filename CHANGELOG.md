@@ -1,3 +1,7 @@
+## 1.1.2:
+
+* Removed EverTrue's email from the default
+
 ## 1.1.1:
 
 * Use external fog cookbook
