@@ -2,7 +2,12 @@ use_inline_resources
 
 action :create do
   dns_server = Chef::Recipe::Ec2DnsServer.new(node)
-  hosts = dns_server.get_names_with_ips(new_resource.vpc,new_resource.avoid_subnets)
+  hosts = dns_server.get_names_with_ips(
+    new_resource.vpc,
+    new_resource.avoid_subnets,
+    new_resource.static_records,
+    node.chef_environment
+  )
 
   # In the template, the source host and the apex are both supposed
   # to end with dots in SOME places in the template. We're not going

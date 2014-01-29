@@ -1,3 +1,7 @@
+## 1.2.0:
+
+* Add static_records function
+
 ## 1.1.2:
 
 * Removed EverTrue's email from the default

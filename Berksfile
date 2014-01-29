@@ -2,7 +2,7 @@ site :opscode
 
 metadata
 
-cookbook 'et_fog', git: 'git@github.com:evertrue/et_fog-cookbook.git', tag: 'v1.0.2'
+cookbook 'et_fog', git: 'git@github.com:evertrue/et_fog-cookbook.git', tag: 'v1.0.3'
 
 # et_base was necessary here to get a very specific kind of package-related
 # failure to occur during testing (apt-repos would get updated without

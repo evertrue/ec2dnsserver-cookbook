@@ -9,38 +9,44 @@ $ORIGIN <%= @apex %>.
   <%= @min_ttl %>
 )
 <%
-  if ! Chef::Recipe::Ec2DnsServer.valid_hostname?(node.name)
-    raise "My own hostname #{node.name} is invalid"
-  end
+if ! Chef::Recipe::Ec2DnsServer.valid_hostname?(node.name)
+  raise "My own hostname #{node.name} is invalid"
+end
 -%>
 
  NS <%= node.name %>.<%= @suffix %>.
 
-<% if @ptr -%>
+<%
+if @ptr
+-%>
 <%= IPAddr.new(node['ipaddress']).reverse.sub(/\.?#{Regexp.escape(@apex)}$/,'') %> IN PTR <%= node.name %>.<%= @suffix %>.
 
-<% @hosts.each do |rr,val| -%>
-<% if rr != node.name -%>
 <%
-  if ! Chef::Recipe::Ec2DnsServer.valid_hostname?(rr)
-    raise "Invalid hostname #{rr}"
-  end
+  @hosts.each do |rr,data|
+    if rr != node.name
+      if ! Chef::Recipe::Ec2DnsServer.valid_hostname?(rr)
+        raise "Invalid hostname #{rr}"
+      end
 -%>
-<%= IPAddr.new(val).reverse.sub(/\.?#{Regexp.escape(@apex)}$/,'') %> IN PTR <%= rr %>.<%= @suffix %>.
-<% end # if rr != node.name -%>
-<% end # @hosts.each do |rr,val| -%>
-<% else -%>
+<%= IPAddr.new(data['val']).reverse.sub(/\.?#{Regexp.escape(@apex)}$/,'') %> IN PTR <%= rr %>.<%= @suffix %>.
+<%
+    end # if rr != node.name
+  end # @hosts.each do |rr,data|
+else # if @ptr
+-%>
 
 <%= node.name %> IN A <%= node['ipaddress'] %>
 
-<% @hosts.each do |rr,val| -%>
-<% if rr != node.name -%>
 <%
-  if ! Chef::Recipe::Ec2DnsServer.valid_hostname?(rr)
-    raise "Invalid hostname #{rr}"
-  end
+  @hosts.each do |rr,data|
+    if rr != node.name
+      if ! Chef::Recipe::Ec2DnsServer.valid_hostname?(rr)
+        raise "Invalid hostname #{rr}"
+      end
 -%>
-<%= rr %> IN A <%= val %>
-<% end -%>
-<% end -%>
-<% end -%>
+<%= rr %> IN <%= data['type'] %> <%= data['val'] %>
+<%
+    end # if rr != node.name
+  end # @hosts.each
+end # if @ptr
+-%>

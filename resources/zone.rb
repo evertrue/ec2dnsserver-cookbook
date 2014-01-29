@@ -13,4 +13,5 @@ attribute :retry_time, :kind_of => [ String, Fixnum ], :default => "600"
 attribute :expire_time, :kind_of => [ String, Fixnum ], :default => "86400"
 attribute :min_ttl, :kind_of => [ String, Fixnum ], :default => "3600"
 attribute :vpc, :kind_of => String, :default => nil
+attribute :static_records, :kind_of => Hash, :default => {}
 attribute :avoid_subnets, :kind_of => Array, :default => []
