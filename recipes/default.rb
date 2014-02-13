@@ -55,15 +55,15 @@ template "#{node['ec2dnsserver']['config_dir']}/named.conf.local" do
   notifies :restart, "service[#{node['ec2dnsserver']['service_name']}]"
 end
 
-node['ec2dnsserver']['zones'].each do |zone|
-  ec2dnsserver_zone zone['apex'] do
+node['ec2dnsserver']['zones'].each do |zone,zone_conf|
+  ec2dnsserver_zone zone do
     vpc node['ec2dnsserver']['vpc']
-    ptr zone['ptr_zone']
-    suffix zone['suffix']
-    static_records zone['static_records']
+    ptr zone_conf['ptr_zone']
+    suffix zone_conf['suffix']
+    static_records zone_conf['static_records']
     avoid_subnets node['ec2dnsserver']['avoid_subnets']
     contact_email node['ec2dnsserver']['contact_email']
-    path "#{node['ec2dnsserver']['zones_dir']}/db.#{zone['apex']}"
+    path "#{node['ec2dnsserver']['zones_dir']}/db.#{zone}"
     notifies :run, "execute[reload_zones]"
   end
 end

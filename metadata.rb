@@ -4,7 +4,7 @@ maintainer_email 'devops@evertrue.com'
 license          'All rights reserved'
 description      'Installs/Configures ec2dnsserver'
 long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
-version          '1.2.0'
+version          '1.3.0'
 
 depends 'build-essential'
 depends 'et_fog', '= 1.0.3'
