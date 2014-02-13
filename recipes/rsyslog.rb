@@ -15,3 +15,4 @@ template "/etc/rsyslog.d/25-named.conf" do
   mode 00644
   notifies :restart, "service[rsyslog]"
 end
+
