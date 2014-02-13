@@ -15,3 +15,5 @@ Gemfile.lock
 bin/*
 .bundle/*
 
+.chef-zero
+.chef-zero/*
