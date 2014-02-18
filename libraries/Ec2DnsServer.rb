@@ -97,6 +97,7 @@ class Chef::Recipe::Ec2DnsServer
             }.reject { |ni|
               ni == {}
             }.map { |ni|
+              # Don't avoid an IP if it's the only IP.
               conn.network_interfaces.get(ni["networkInterfaceId"]).private_ip_address
             }.first || s.private_ip_address
         }
