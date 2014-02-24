@@ -20,7 +20,7 @@ class Chef::Recipe::Ec2DnsServer
 
   end
 
-  def chef_nodename(static_records, env)
+  def chef_nodename(static_records = {})
 
     # The purpose of this clunky function is to provide, essentially, DNS
     # overrides.
@@ -39,7 +39,7 @@ class Chef::Recipe::Ec2DnsServer
         elsif rr_data['cookbook']
           result = Chef::Search::Query.new.search(
               :node,
-              "chef_environment:#{env} AND " +
+              "chef_environment:#{@env} AND " +
               "recipes:#{rr_data['cookbook']}"
             ).first.first
 
@@ -51,7 +51,7 @@ class Chef::Recipe::Ec2DnsServer
         elsif rr_data['role']
           result = Chef::Search::Query.new.search(
               :node,
-              "chef_environment:#{env} AND " +
+              "chef_environment:#{@env} AND " +
               "roles:#{rr_data['role']}"
             ).first.first
 
@@ -71,24 +71,39 @@ class Chef::Recipe::Ec2DnsServer
 
   end
 
-  def get_names_with_ips(vpc = nil, avoid_subnets = [], static_records, env)
+  def connection
+    @connection ||= begin
+      require 'fog'
 
-    require 'fog'
+      aws_keys = Chef::EncryptedDataBagItem.load("secrets","aws_credentials")[@node['ec2dnsserver']['aws_api_user']]
 
-    aws_keys = Chef::EncryptedDataBagItem.load("secrets","aws_credentials")[@node['ec2dnsserver']['aws_api_user']]
+      connnection = Fog::Compute.new(
+        :provider => "AWS",
+        :aws_access_key_id => aws_keys['access_key_id'],
+        :aws_secret_access_key => aws_keys['secret_access_key']
+      )
+    end
+  end
 
-    conn = Fog::Compute.new(
-      :provider => "AWS",
-      :aws_access_key_id => aws_keys['access_key_id'],
-      :aws_secret_access_key => aws_keys['secret_access_key']
-    )
+  def ec2_servers(filter = {})
+    connection.servers.all(filter)
+  end
 
-    Chef::Log.info("Avoiding these subnets: #{avoid_subnets.join(',')}")
+  def ec2_network_interfaces(filter = {})
+    connection.network_interfaces.all(filter)
+  end
 
-    filter = { 'vpc-id' => vpc } if vpc
+  def get_names_with_ips(options = {})
+
+    filter = { 'vpc-id' => options['vpc-id'] } if options['vpc-id']
+    avoid_subnets = options['avoid_subnets'] || []
+
+    unless avoid_subnets == []
+      Chef::Log.info("Avoiding these subnets: #{options['avoid_subnets'].join(',')}")
+    end
 
     h = Hash.new
-    conn.servers.all(filter).map do |s|
+    ec2_servers(filter).map do |s|
       if s.tags["Name"]
         h[s.tags["Name"]] = {
           'type' => 'A',
@@ -98,20 +113,21 @@ class Chef::Recipe::Ec2DnsServer
               ni == {}
             }.map { |ni|
               # Don't avoid an IP if it's the only IP.
-              conn.network_interfaces.get(ni["networkInterfaceId"]).private_ip_address
+              ec2_network_interfaces.get(ni["networkInterfaceId"]).private_ip_address
             }.first || s.private_ip_address
         }
       end
     end
 
-    h.merge!(chef_nodename(static_records, env))
+    h.merge!(chef_nodename((options['static_records']||{})))
 
     return h
 
   end
 
-  def initialize(node)
+  def initialize(node, env)
     @node = node
+    @env = env
   end
 
 end
