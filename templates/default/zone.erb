@@ -10,7 +10,7 @@ $ORIGIN <%= @apex %>.
 )
 <%
 if ! Chef::Recipe::Ec2DnsServer.valid_hostname?(node.name)
-  raise "My own hostname #{node.name} is invalid"
+  fail "My own hostname #{node.name} is invalid"
 end
 -%>
 
@@ -25,7 +25,7 @@ if @ptr
   @hosts.each do |rr,data|
     if rr != node.name
       if ! Chef::Recipe::Ec2DnsServer.valid_hostname?(rr)
-        raise "Invalid hostname #{rr}"
+        fail "Invalid hostname #{rr}"
       end
 -%>
 <%= IPAddr.new(data['val']).reverse.sub(/\.?#{Regexp.escape(@apex)}$/,'') %> IN PTR <%= rr %>.<%= @suffix %>.
@@ -43,7 +43,7 @@ else # if @ptr
   @hosts.each do |rr,data|
     if rr != node.name
       if ! Chef::Recipe::Ec2DnsServer.valid_hostname?(rr)
-        raise "Invalid hostname #{rr}"
+        fail "Invalid hostname #{rr}"
       end
 -%>
 <%= @stub ? '' : rr %> IN <%= data['type'] %> <%= data['val'] %>
