@@ -18,9 +18,9 @@ action :create do
   apex = new_resource.apex.sub(/\.$/,'')
 
   template new_resource.path do
-    source "zone.erb"
+    source 'zone.erb'
     mode 00644
-    group "bind"
+    group 'bind'
     variables(
       :hosts => hosts,
       :apex => apex,
@@ -39,8 +39,8 @@ action :create do
   end
 
   directory "#{Chef::Config[:file_cache_path]}/ec2dnsserver/zones_without_serials" do
-    owner "root"
-    group "root"
+    owner 'root'
+    group 'root'
     mode 00755
     action :create
     recursive true
@@ -59,8 +59,8 @@ action :create do
   # Nice, huh? ;-)
   #   -- devops@evertrue.com
 
-  t = template "#{Chef::Config[:file_cache_path]}/ec2dnsserver/zones_without_serials/#{apex}.zone" do
-    source "zone.erb"
+  template "#{Chef::Config[:file_cache_path]}/ec2dnsserver/zones_without_serials/#{apex}.zone" do
+    source 'zone.erb'
     mode 00644
     variables(
       :hosts => hosts,
