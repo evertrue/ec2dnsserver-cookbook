@@ -33,18 +33,20 @@ if @ptr
     end # if rr != node.name
   end # @hosts.each do |rr,data|
 else # if @ptr
+  if @is_primary
 -%>
 
 <%= node.name %> IN A <%= node['ipaddress'] %>
 
 <%
+  end # if @is_primary
   @hosts.each do |rr,data|
     if rr != node.name
       if ! Chef::Recipe::Ec2DnsServer.valid_hostname?(rr)
         raise "Invalid hostname #{rr}"
       end
 -%>
-<%= rr %> IN <%= data['type'] %> <%= data['val'] %>
+<%= @stub ? '' : rr %> IN <%= data['type'] %> <%= data['val'] %>
 <%
     end # if rr != node.name
   end # @hosts.each

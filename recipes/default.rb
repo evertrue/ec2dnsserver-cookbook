@@ -58,8 +58,13 @@ end
 node['ec2dnsserver']['zones'].each do |zone,zone_conf|
   ec2dnsserver_zone zone do
     vpc node['ec2dnsserver']['vpc']
+    stub zone_conf['stub'] || false
     ptr zone_conf['ptr_zone']
-    suffix zone_conf['suffix']
+    if zone_conf['suffix']
+      suffix zone_conf['suffix']
+    else
+      soa_zone zone_conf['soa_zone']
+    end
     static_records zone_conf['static_records']
     avoid_subnets node['ec2dnsserver']['avoid_subnets']
     contact_email node['ec2dnsserver']['contact_email']
