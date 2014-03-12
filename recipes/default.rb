@@ -39,12 +39,24 @@ template "/etc/dhcp/dhclient-exit-hooks.d/set-bind-forwarders" do
   mode 00644
 end
 
+if node['ec2dnsserver']['vpc'] &&
+  node['ec2dnsserver']['forwarders'].empty?
+  forwarders = [
+    Chef::Recipe::Ec2DnsServer.new(node).vpc_default_dns(
+      node['ec2dnsserver']['vpc']
+    )
+  ]
+else
+  forwarders = node['ec2dnsserver']['forwarders']
+end
+
 template "#{node['ec2dnsserver']['config_dir']}/named.conf.options" do
   source "named.conf.options.erb"
   owner "root"
   group "root"
   mode 00644
   notifies :restart, "service[#{node['ec2dnsserver']['service_name']}]"
+  variables(forwarders: forwarders)
 end
 
 template "#{node['ec2dnsserver']['config_dir']}/named.conf.local" do
