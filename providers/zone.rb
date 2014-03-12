@@ -2,11 +2,11 @@ use_inline_resources
 
 action :create do
   dns_server = Chef::Recipe::Ec2DnsServer.new(node, node.chef_environment)
-  hosts = dns_server.get_names_with_ips({
+  hosts = dns_server.get_names_with_ips(
     'vpc-id' => new_resource.vpc,
     'avoid_subnets' => new_resource.avoid_subnets,
     'static_records' => new_resource.static_records
-  })
+  )
 
   # In the template, the source host and the apex are both supposed
   # to end with dots in SOME places in the template. We're not going
@@ -14,26 +14,26 @@ action :create do
   # this, so we'll just always remove the dot and add it later if we
   # need it.
 
-  source_host = new_resource.source_host.sub(/\.$/,'')
-  apex = new_resource.apex.sub(/\.$/,'')
+  source_host = new_resource.source_host.sub(/\.$/, '')
+  apex = new_resource.apex.sub(/\.$/, '')
 
   template new_resource.path do
     source 'zone.erb'
     mode 00644
     group 'bind'
     variables(
-      :hosts => hosts,
-      :apex => apex,
-      :source_host => source_host,
-      :ptr => new_resource.ptr,
-      :suffix => new_resource.suffix,
-      :serial_number => Time.now.to_i,
-      :default_ttl => new_resource.default_ttl,
-      :contact_email => new_resource.contact_email.sub("@","."),
-      :refresh_time => new_resource.refresh_time,
-      :retry_time => new_resource.retry_time,
-      :expire_time => new_resource.expire_time,
-      :min_ttl => new_resource.min_ttl
+      hosts: hosts,
+      apex: apex,
+      source_host: source_host,
+      ptr: new_resource.ptr,
+      suffix: new_resource.suffix,
+      serial_number: Time.now.to_i,
+      default_ttl: new_resource.default_ttl,
+      contact_email: new_resource.contact_email.sub('@', '.'),
+      refresh_time: new_resource.refresh_time,
+      retry_time: new_resource.retry_time,
+      expire_time: new_resource.expire_time,
+      min_ttl: new_resource.min_ttl
     )
     action :nothing
   end
@@ -63,18 +63,18 @@ action :create do
     source 'zone.erb'
     mode 00644
     variables(
-      :hosts => hosts,
-      :apex => apex,
-      :source_host => source_host,
-      :ptr => new_resource.ptr,
-      :suffix => new_resource.suffix,
-      :serial_number => "",
-      :default_ttl => new_resource.default_ttl,
-      :contact_email => new_resource.contact_email.sub("@","."),
-      :refresh_time => new_resource.refresh_time,
-      :retry_time => new_resource.retry_time,
-      :expire_time => new_resource.expire_time,
-      :min_ttl => new_resource.min_ttl
+      hosts: hosts,
+      apex: apex,
+      source_host: source_host,
+      ptr: new_resource.ptr,
+      suffix: new_resource.suffix,
+      serial_number: '',
+      default_ttl: new_resource.default_ttl,
+      contact_email: new_resource.contact_email.sub('@', '.'),
+      refresh_time: new_resource.refresh_time,
+      retry_time: new_resource.retry_time,
+      expire_time: new_resource.expire_time,
+      min_ttl: new_resource.min_ttl
     )
     notifies :create, "template[#{new_resource.path}]"
   end

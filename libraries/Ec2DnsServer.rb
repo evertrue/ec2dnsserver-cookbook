@@ -1,23 +1,15 @@
 class Chef::Recipe::Ec2DnsServer
-
   def self.valid_hostname?(hostname)
+    return false if hostname.length > 255 || hostname.scan('..').any?
 
-    if hostname.length > 255 or hostname.scan('..').any?
-      return false
-    end
+    hostname = hostname[0 ... -1] if hostname.index('.', -1)
 
-    if hostname.index('.', -1)
-      hostname = hostname[0 ... -1]
-    end
-
-    return hostname.split('.').collect { |i|
-      i.size <= 63 and not
-        (i.rindex('-', 0) or
-          i.index('-', -1) or
-          i.scan(/[^a-z\d-]/i).any?
-        )
-    }.all?
-
+    hostname.split('.').map do |i|
+      i.size <= 63 && !(i.rindex('-', 0) ||
+        i.index('-', -1) ||
+        i.scan(/[^a-z\d-]/i).any?
+      )
+    end.all?
   end
 
   def vpc_default_dns(vpc_id)
@@ -30,7 +22,6 @@ class Chef::Recipe::Ec2DnsServer
   end
 
   def chef_nodename(static_records = {})
-
     # The purpose of this clunky function is to provide, essentially, DNS
     # overrides.
     #
@@ -40,11 +31,12 @@ class Chef::Recipe::Ec2DnsServer
 
     h = {}
 
-    static_records.each do |rr,rr_data|
+    static_records.each do |rr, rr_data|
       begin
         Chef::Log.debug("Processing static record: #{rr_data.class}/#{rr}/#{rr_data.inspect}")
+
         if rr_data.class == String
-          h[rr] = {'val' => rr_data}
+          h[rr] = { 'val' => rr_data }
         elsif rr_data['cookbook']
           result = Chef::Search::Query.new.search(
               :node,
@@ -52,9 +44,7 @@ class Chef::Recipe::Ec2DnsServer
               "recipes:#{rr_data['cookbook']}"
             ).first.first
 
-          if result.nil?
-            raise "No nodes found with cookbook #{rr_data['cookbook']}"
-          end
+          fail "No nodes found with cookbook #{rr_data['cookbook']}" if result.nil?
 
           h[rr] = { 'val' => result.name }
         elsif rr_data['role']
@@ -64,32 +54,32 @@ class Chef::Recipe::Ec2DnsServer
               "roles:#{rr_data['role']}"
             ).first.first
 
-          if result.nil?
-            raise "No nodes found with role #{rr_data['role']}"
-          end
+          fail "No nodes found with role #{rr_data['role']}" if result.nil?
 
           h[rr] = { 'val' => result.name }
         else
-          raise "No recognized static record data: #{rr_data.inspect}"
+          fail "No recognized static record data: #{rr_data.inspect}"
         end
         h[rr]['type'] = 'CNAME'
       end
     end
 
-    return h
-
+    h
   end
 
   def connection
     @connection ||= begin
       require 'fog'
 
-      aws_keys = Chef::EncryptedDataBagItem.load("secrets","aws_credentials")[@node['ec2dnsserver']['aws_api_user']]
+      aws_keys = Chef::EncryptedDataBagItem.load(
+        'secrets',
+        'aws_credentials'
+      )[@node['ec2dnsserver']['aws_api_user']]
 
-      connnection = Fog::Compute.new(
-        :provider => "AWS",
-        :aws_access_key_id => aws_keys['access_key_id'],
-        :aws_secret_access_key => aws_keys['secret_access_key']
+      @connnection = Fog::Compute.new(
+        provider: 'AWS',
+        aws_access_key_id: aws_keys['access_key_id'],
+        aws_secret_access_key: aws_keys['secret_access_key']
       )
     end
   end
@@ -103,7 +93,6 @@ class Chef::Recipe::Ec2DnsServer
   end
 
   def get_names_with_ips(options = {})
-
     filter = { 'vpc-id' => options['vpc-id'] } if options['vpc-id']
     avoid_subnets = options['avoid_subnets'] || []
 
@@ -111,32 +100,31 @@ class Chef::Recipe::Ec2DnsServer
       Chef::Log.info("Avoiding these subnets: #{options['avoid_subnets'].join(',')}")
     end
 
-    h = Hash.new
+    h = {}
+
     ec2_servers(filter).map do |s|
-      if s.tags["Name"]
-        h[s.tags["Name"]] = {
+      if s.tags['Name']
+        h[s.tags['Name']] = {
           'type' => 'A',
           'val' => s.network_interfaces.reject { |ni|
-              avoid_subnets.include?ni["subnetId"]
+              avoid_subnets.include?ni['subnetId']
             }.reject { |ni|
               ni == {}
             }.map { |ni|
               # Don't avoid an IP if it's the only IP.
-              ec2_network_interfaces.get(ni["networkInterfaceId"]).private_ip_address
+              ec2_network_interfaces.get(ni['networkInterfaceId']).private_ip_address
             }.first || s.private_ip_address
         }
       end
     end
 
-    h.merge!(chef_nodename((options['static_records']||{})))
+    h.merge!(chef_nodename((options['static_records'] || {})))
 
-    return h
-
+    h
   end
 
   def initialize(node = {}, env = '')
     @node = node
     @env = env
   end
-
 end

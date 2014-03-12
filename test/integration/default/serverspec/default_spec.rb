@@ -1,13 +1,13 @@
 require 'spec_helper'
 
 describe port(53) do
-  ['tcp','udp'].each do |proto|
+  %w(tcp udp).each do |proto|
     it { should be_listening.with(proto) }
   end
 end
 
 describe command('dig google.com @localhost') do
-  it { should return_stdout /status: NOERROR/ }
+  it { should return_stdout(/status: NOERROR/) }
 end
 
 describe service('bind9') do
@@ -16,8 +16,8 @@ describe service('bind9') do
 end
 
 describe command('dig SOA priv.evertrue.com @localhost') do
-  it { should return_stdout /status: NOERROR/ }
-  it { should return_stdout /devops\.evertrue\.com\./ }
+  it { should return_stdout(/status: NOERROR/) }
+  it { should return_stdout(/devops\.evertrue\.com\./) }
 end
 
 describe file('/etc/bind/named.conf.local') do
