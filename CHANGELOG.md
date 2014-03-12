@@ -1,3 +1,7 @@
+## 1.4.1:
+
+* Derive local VPC DNS IP if it is not hardcoded in an attribute
+
 ## 1.4.0:
 
 * Add stub zones feature

@@ -20,6 +20,15 @@ class Chef::Recipe::Ec2DnsServer
 
   end
 
+  def vpc_default_dns(vpc_id)
+    # Currently assume the default DNS server is second valid IP in the VPC
+    # subnet (the first is usually the gateway).  Suggestions for a more
+    # "correct" way to get the default DNS are welcome/encouraged.
+
+    vpc_net = connection.vpcs.all('vpc-id' => vpc_id).first.cidr_block
+    IPAddress::IPv4.parse_u32(IPAddress.parse(vpc_net).network_u32 + 2)
+  end
+
   def chef_nodename(static_records = {})
 
     # The purpose of this clunky function is to provide, essentially, DNS
@@ -125,7 +134,7 @@ class Chef::Recipe::Ec2DnsServer
 
   end
 
-  def initialize(node, env)
+  def initialize(node = {}, env = '')
     @node = node
     @env = env
   end
