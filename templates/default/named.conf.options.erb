@@ -11,7 +11,7 @@ options {
     <% end -%>
   };
   forwarders {
-    <% node['ec2dnsserver']['forwarders'].each do |forwarder| -%>
+    <% @forwarders.each do |forwarder| -%>
     <%= forwarder %>;
     <% end -%>
   };

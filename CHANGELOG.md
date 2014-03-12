@@ -1,3 +1,15 @@
+## 1.4.1:
+
+* Derive local VPC DNS IP if it is not hardcoded in an attribute
+
+## 1.4.0:
+
+* Add stub zones feature
+
+## 1.3.0:
+
+* Optimize library for better testing
+
 ## 1.2.0:
 
 * Add static_records function
