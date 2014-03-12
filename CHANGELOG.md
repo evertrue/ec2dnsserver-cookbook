@@ -1,3 +1,11 @@
+## 1.4.0:
+
+* Add stub zones feature
+
+## 1.3.0:
+
+* Optimize library for better testing
+
 ## 1.2.0:
 
 * Add static_records function
