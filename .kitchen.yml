@@ -43,6 +43,11 @@ suites:
   data_bags_path: ../../server-chef/data_bags
   encrypted_data_bag_secret_key_path: <%= ENV['HOME'] %>/.chef/encrypted_data_bag_secret
   attributes:
+    ec2:
+      mac: '00:00:00:00:00:00'
+      network_interfaces_macs:
+        '00:00:00:00:00:00':
+          vpc_ipv4_cidr_block: 10.99.0.0/16
     ec2dnsserver:
       contact_email: devops@evertrue.com
       recursion_clients:

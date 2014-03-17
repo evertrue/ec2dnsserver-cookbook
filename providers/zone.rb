@@ -11,14 +11,6 @@ action :create do
   apex = new_resource.apex.sub(/\.$/, '')
   source_host = new_resource.source_host.sub(/\.$/, '')
 
-  hosts = dns_server.get_names_with_ips(
-    apex,
-    new_resource.stub,
-    'vpc-id' => new_resource.vpc,
-    'avoid_subnets' => new_resource.avoid_subnets,
-    'static_records' => new_resource.static_records
-  )
-
   # We need a suffix but stub zones don't inherently have them
   if new_resource.suffix.empty? && new_resource.soa_zone.empty?
     fail "#{apex}: Either suffix or soa_zone must be specified"
@@ -28,6 +20,27 @@ action :create do
   else
     suffix = new_resource.soa_zone
     is_primary = false
+  end
+
+  if !new_resource.vpcs.empty?
+    hosts = {}
+
+    new_resource.vpcs.each do |vpc|
+      hosts.merge!(dns_server.get_names_with_ips(
+        apex,
+        new_resource.stub,
+        'vpc-id' => vpc,
+        'avoid_subnets' => new_resource.avoid_subnets,
+        'static_records' => new_resource.static_records
+      ))
+    end
+  else
+    hosts = dns_server.get_names_with_ips(
+      apex,
+      new_resource.stub,
+      'avoid_subnets' => new_resource.avoid_subnets,
+      'static_records' => new_resource.static_records
+    )
   end
 
   template new_resource.path do

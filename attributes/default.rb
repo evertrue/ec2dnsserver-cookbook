@@ -9,7 +9,6 @@ default['ec2dnsserver']['aws_api_user'] = 'Ec2DnsServer'
 default['ec2dnsserver']['vpc'] = nil
 default['ec2dnsserver']['config_dir'] = '/etc/bind'
 default['ec2dnsserver']['cache_dir'] = '/var/cache/bind'
-default['ec2dnsserver']['forwarders'] = []
 default['ec2dnsserver']['zones_dir'] = node['ec2dnsserver']['config_dir']
 default['ec2dnsserver']['contact_email'] = nil
 default['ec2dnsserver']['enable-ipv6'] = false

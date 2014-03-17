@@ -6,6 +6,9 @@
 #
 # All rights reserved - Do Not Redistribute
 #
+
+fail 'This cookbook will only work on nodes in ec2' unless node['ec2']
+
 include_recipe 'et_fog'
 include_recipe "ec2dnsserver::#{node['ec2dnsserver']['log']['logger']}"
 
@@ -39,16 +42,13 @@ template '/etc/dhcp/dhclient-exit-hooks.d/set-bind-forwarders' do
   mode 00644
 end
 
-if node['ec2dnsserver']['vpc'] &&
-  node['ec2dnsserver']['forwarders'].empty?
-  forwarders = [
-    Chef::Recipe::Ec2DnsServer.new(node).vpc_default_dns(
-      node['ec2dnsserver']['vpc']
-    )
-  ]
-else
-  forwarders = node['ec2dnsserver']['forwarders']
-end
+log "ec2 hash: #{node['ec2'].inspect}" do
+  level :info
+end.run_action(:write)
+
+forwarders = Ec2DnsServer.forwarders(node)
+
+Chef::Log.info("Forwarders: #{forwarders}")
 
 template "#{node['ec2dnsserver']['config_dir']}/named.conf.options" do
   source 'named.conf.options.erb'
@@ -71,7 +71,7 @@ node['ec2dnsserver']['zones'].each do |zone, zone_conf|
   Chef::Log.info("Zone #{zone} using suffix #{zone_conf['suffix']}") if zone_conf['suffix']
 
   ec2dnsserver_zone zone do
-    vpc node['ec2dnsserver']['vpc']
+    vpcs zone_conf['vpcs'] if zone_conf['vpcs']
     stub zone_conf['stub'] || false
     ptr zone_conf['ptr_zone']
     if zone_conf['suffix']

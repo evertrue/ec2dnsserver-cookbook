@@ -1,6 +1,26 @@
 class Chef::Recipe::Ec2DnsServer
   require 'ipaddress'
 
+  def self.forwarders(node)
+    # This determines what our external DNS source is going to be.
+    if node['ec2dnsserver']['forwarders']
+      # First try statically defined
+      forwarders = node['ec2dnsserver']['forwarders']
+    elsif node['ec2']['network_interfaces_macs'][node['ec2']['mac']]['vpc_ipv4_cidr_block']
+      # Next try to determine it programmatically based on our VPC subnet (if any)
+      forwarders = [
+        Chef::Recipe::Ec2DnsServer.vpc_default_dns(
+          node['ec2']['network_interfaces_macs'][node['ec2']['mac']]['vpc_ipv4_cidr_block']
+        )
+      ]
+    else
+      # This falls back to the EC2 global default
+      forwarders = ['10.0.0.2']
+    end
+
+    forwarders
+  end
+
   def self.valid_hostname?(hostname)
     return false if hostname.length > 255 || hostname.scan('..').any?
 
@@ -15,14 +35,58 @@ class Chef::Recipe::Ec2DnsServer
     end.all?
   end
 
-  def vpc_default_dns(vpc_id)
+  def self.vpc_default_dns(vpc_net)
     # Currently assume the default DNS server is second valid IP in the VPC
     # subnet (the first is usually the gateway).  Suggestions for a more
     # "correct" way to get the default DNS are welcome/encouraged.
 
-    vpc_net = connection.vpcs.all('vpc-id' => vpc_id).first.cidr_block
     IPAddress::IPv4.parse_u32(IPAddress.parse(vpc_net).network_u32 + 2)
   end
+
+  def get_names_with_ips(apex, stub, options = {})
+    @apex = apex
+    @stub = stub
+    filter = {}
+    filter['vpc-id'] = options['vpc-id'] if options['vpc-id']
+    @avoid_subnets = options['avoid_subnets'] || []
+
+    Chef::Log.info('Avoiding these subnets: ' +
+      options['avoid_subnets'].join(',')) unless @avoid_subnets == []
+
+    h = {}
+    unless @stub
+      ec2_servers(filter).map do |s|
+        if s.tags['Name']
+          server_ip = server_obj_ip(s)
+          if server_ip.nil?
+            Chef::Log.warn("#{s.tags['Name']} has no IP")
+          else
+            h[s.tags['Name']] = {
+              'type' => 'A',
+              'val' => server_ip
+            }
+          end
+        end
+      end
+    end
+
+    h.merge!(
+      static_record_nodenames(
+        (options['static_records'] || {})
+      )
+    )
+
+    Chef::Log.debug("Merged host hash for #{@apex}: #{h.inspect}")
+
+    h
+  end
+
+  def initialize(node = {}, env = '')
+    @node = node
+    @env = env
+  end
+
+  private
 
   def node_by_search_data(rr_data)
     if rr_data['cookbook']
@@ -134,43 +198,5 @@ class Chef::Recipe::Ec2DnsServer
         'network-interface-id' => ni['networkInterfaceId']
       ).private_ip_address
     }.first || server.private_ip_address
-  end
-
-  def get_names_with_ips(apex, stub, options = {})
-    @apex = apex
-    @stub = stub
-    filter = {}
-    filter['vpc-id'] = options['vpc-id'] if options['vpc-id']
-    @avoid_subnets = options['avoid_subnets'] || []
-
-    Chef::Log.info('Avoiding these subnets: ' +
-      options['avoid_subnets'].join(',')) unless @avoid_subnets == []
-
-    h = {}
-    unless @stub
-      ec2_servers(filter).map do |s|
-        if s.tags['Name']
-          h[s.tags['Name']] = {
-            'type' => 'A',
-            'val' => server_obj_ip(s)
-          }
-        end
-      end
-    end
-
-    h.merge!(
-      static_record_nodenames(
-        (options['static_records'] || {})
-      )
-    )
-
-    Chef::Log.debug("Merged host hash for #{@apex}: #{h.inspect}")
-
-    h
-  end
-
-  def initialize(node = {}, env = '')
-    @node = node
-    @env = env
   end
 end
