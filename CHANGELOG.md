@@ -1,7 +1,14 @@
+## 1.5.0:
+
+* Support multiple VPCs per DNS server and no VPC at all
+* Get VPC CIDR block directly from ohai data rather tha via Fog.
+* Allow forwarders override
+* Define VPC(s) in zone config
+* Refuse to run without EC2
+
 ## 1.4.0:
 
 * Derive local VPC DNS IP if it is not hardcoded in an attribute
-* Add stub zones feature
 
 ## 1.3.0:
 
