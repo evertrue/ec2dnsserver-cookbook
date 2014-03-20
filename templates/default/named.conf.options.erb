@@ -35,9 +35,9 @@ logging {
   };
   <% if node['ec2dnsserver']['log']['log_queries'] -%>
   channel query_log_file {
-    file "/var/log/named/query.log";
-    versions 10;
-    size 25m;
+    file "/var/log/named/query.log"
+      versions <%= node['ec2dnsserver']['log']['versions'] %>
+      size <%= node['ec2dnsserver']['log']['size'] %>;
     print-time yes;
   };
   channel query_syslog {
