@@ -2,9 +2,9 @@ actions :create, :delete
 default_action :create
 
 attribute :apex,            kind_of: String,            name_attribute: true
-attribute :path,            kind_of: String,            required: true
 attribute :suffix,          kind_of: String,            default: ''
 attribute :soa_zone,        kind_of: String,            default: ''
+attribute :path,            kind_of: String,            default: nil
 attribute :source_host,     kind_of: String,            default: node.name
 attribute :ptr,             equal_to: [true, false],    default: false
 attribute :default_ttl,     kind_of: Fixnum,            default: 300

@@ -82,7 +82,6 @@ node['ec2dnsserver']['zones'].each do |zone, zone_conf|
     static_records zone_conf['static_records']
     avoid_subnets node['ec2dnsserver']['avoid_subnets']
     contact_email node['ec2dnsserver']['contact_email']
-    path "#{node['ec2dnsserver']['zones_dir']}/db.#{zone}"
     notifies :run, 'execute[reload_zones]'
   end
 end

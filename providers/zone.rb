@@ -22,6 +22,12 @@ action :create do
     is_primary = false
   end
 
+  if new_resource.path.nil?
+    path = "#{node['ec2dnsserver']['zones_dir']}/db.#{apex}"
+  else
+    path = new_resource.path
+  end
+
   if !new_resource.vpcs.empty?
     hosts = {}
 
@@ -43,7 +49,7 @@ action :create do
     )
   end
 
-  template new_resource.path do
+  template path do
     source 'zone.erb'
     mode 00644
     group 'bind'
@@ -87,7 +93,12 @@ action :create do
   # Nice, huh? ;-)
   #   -- devops@evertrue.com
 
-  template "#{Chef::Config[:file_cache_path]}/ec2dnsserver/zones_without_serials/#{apex}.zone" do
+  directory ::File.dirname("#{Chef::Config[:file_cache_path]}/ec2dnsserver/zones_without_serials" +
+      path) do
+    recursive true
+  end
+
+  template "#{Chef::Config[:file_cache_path]}/ec2dnsserver/zones_without_serials" + path do
     source 'zone.erb'
     mode 00644
     variables(
@@ -106,7 +117,7 @@ action :create do
       expire_time: new_resource.expire_time,
       nxdomain_ttl: new_resource.nxdomain_ttl
     )
-    notifies :create, "template[#{new_resource.path}]"
+    notifies :create, "template[#{path}]"
   end
 
 end
