@@ -6,7 +6,6 @@ set['chef_client']['splay'] = '180'
 default['ec2dnsserver']['user'] = 'bind'
 default['ec2dnsserver']['group'] = 'bind'
 default['ec2dnsserver']['aws_api_user'] = 'Ec2DnsServer'
-default['ec2dnsserver']['vpc'] = nil
 default['ec2dnsserver']['config_dir'] = '/etc/bind'
 default['ec2dnsserver']['cache_dir'] = '/var/cache/bind'
 default['ec2dnsserver']['zones_dir'] = node['ec2dnsserver']['config_dir']
