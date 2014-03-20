@@ -43,9 +43,6 @@ logging {
   channel query_syslog {
     syslog <%= node['ec2dnsserver']['log']['facility'] %>;
     severity debug;
-    versions 10;
-    size 25m;
-    print-time yes;
   };
   category queries {
     query_log_file;
