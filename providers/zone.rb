@@ -11,17 +11,6 @@ action :create do
   apex = new_resource.apex.sub(/\.$/, '')
   source_host = new_resource.source_host.sub(/\.$/, '')
 
-  # We need a suffix but stub zones don't inherently have them
-  if new_resource.suffix.empty? && new_resource.soa_zone.empty?
-    fail "#{apex}: Either suffix or soa_zone must be specified"
-  elsif !new_resource.suffix.empty?
-    suffix = new_resource.suffix
-    is_primary = true
-  else
-    suffix = new_resource.soa_zone
-    is_primary = false
-  end
-
   if new_resource.path.nil?
     path = "#{node['ec2dnsserver']['zones_dir']}/db.#{apex}"
   else
@@ -49,6 +38,19 @@ action :create do
     )
   end
 
+  if !new_resource.ns_zone.nil? && new_resource.ns_zone != apex
+    primary = false
+  else
+    primary = true
+  end
+
+  case primary
+  when true
+    Chef::Log.info("Zone #{apex} is a primary zone.")
+  when false
+    Chef::Log.info("Zone #{apex} is NOT a primary zone.")
+  end
+
   template path do
     source 'zone.erb'
     mode 00644
@@ -56,18 +58,19 @@ action :create do
     variables(
       hosts: hosts,
       apex: apex,
-      is_primary: is_primary,
+      is_primary: primary,
       stub: new_resource.stub,
       source_host: source_host,
       ptr: new_resource.ptr,
-      suffix: suffix,
+      suffix: new_resource.suffix.nil? ? apex : new_resource.suffix,
       serial_number: Time.now.to_i,
       default_ttl: new_resource.default_ttl,
       contact_email: new_resource.contact_email.sub('@', '.'),
       refresh_time: new_resource.refresh_time,
       retry_time: new_resource.retry_time,
       expire_time: new_resource.expire_time,
-      nxdomain_ttl: new_resource.nxdomain_ttl
+      nxdomain_ttl: new_resource.nxdomain_ttl,
+      ns_zone: new_resource.ns_zone.nil? ? apex : new_resource.ns_zone
     )
     action :nothing
   end
@@ -104,18 +107,19 @@ action :create do
     variables(
       hosts: hosts,
       apex: apex,
-      is_primary: is_primary,
+      is_primary: primary,
       stub: new_resource.stub,
       source_host: source_host,
       ptr: new_resource.ptr,
-      suffix: suffix,
+      suffix: new_resource.suffix.nil? ? apex : new_resource.suffix,
       serial_number: '',
       default_ttl: new_resource.default_ttl,
       contact_email: new_resource.contact_email.sub('@', '.'),
       refresh_time: new_resource.refresh_time,
       retry_time: new_resource.retry_time,
       expire_time: new_resource.expire_time,
-      nxdomain_ttl: new_resource.nxdomain_ttl
+      nxdomain_ttl: new_resource.nxdomain_ttl,
+      ns_zone: new_resource.ns_zone.nil? ? apex : new_resource.ns_zone
     )
     notifies :create, "template[#{path}]"
   end

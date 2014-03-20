@@ -2,9 +2,8 @@ actions :create, :delete
 default_action :create
 
 attribute :apex,            kind_of: String,            name_attribute: true
-attribute :suffix,          kind_of: String,            default: ''
-attribute :soa_zone,        kind_of: String,            default: ''
 attribute :path,            kind_of: String,            default: nil
+attribute :suffix,          kind_of: String,            default: nil
 attribute :source_host,     kind_of: String,            default: node.name
 attribute :ptr,             equal_to: [true, false],    default: false
 attribute :default_ttl,     kind_of: Fixnum,            default: 300
@@ -17,3 +16,4 @@ attribute :vpcs,            kind_of: Array,             default: []
 attribute :static_records,  kind_of: Hash,              default: {}
 attribute :avoid_subnets,   kind_of: Array,             default: []
 attribute :stub,            equal_to: [true, false],    default: false
+attribute :ns_zone,         kind_of: String,            default: nil

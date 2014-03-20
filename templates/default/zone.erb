@@ -1,7 +1,7 @@
 <% require 'ipaddr' -%>
 $TTL <%= @default_ttl %>
 $ORIGIN <%= @apex %>.
-@ <%= @default_ttl %> IN SOA <%= @source_host %>.<%= @suffix %>. <%= @contact_email %>. (
+@ <%= @default_ttl %> IN SOA <%= @source_host %>.<%= @ns_zone %>. <%= @contact_email %>. (
   <%= @serial_number %>
   <%= @refresh_time %>
   <%= @retry_time %>
@@ -14,7 +14,7 @@ if ! Chef::Recipe::Ec2DnsServer.valid_hostname?(node.name)
 end
 -%>
 
- NS <%= node.name %>.<%= @suffix %>.
+ NS <%= node.name %>.<%= @ns_zone %>.
 
 <%
 if @ptr
