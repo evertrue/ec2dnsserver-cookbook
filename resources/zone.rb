@@ -12,7 +12,7 @@ attribute :contact_email,   kind_of: String,            required: true
 attribute :refresh_time,    kind_of: [String, Fixnum],  default: '3600'
 attribute :retry_time,      kind_of: [String, Fixnum],  default: '600'
 attribute :expire_time,     kind_of: [String, Fixnum],  default: '86400'
-attribute :min_ttl,         kind_of: [String, Fixnum],  default: '3600'
+attribute :nxdomain_ttl,    kind_of: [String, Fixnum],  default: '300'
 attribute :vpcs,            kind_of: Array,             default: []
 attribute :static_records,  kind_of: Hash,              default: {}
 attribute :avoid_subnets,   kind_of: Array,             default: []

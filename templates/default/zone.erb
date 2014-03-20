@@ -6,7 +6,7 @@ $ORIGIN <%= @apex %>.
   <%= @refresh_time %>
   <%= @retry_time %>
   <%= @expire_time %>
-  <%= @min_ttl %>
+  <%= @nxdomain_ttl %>
 )
 <%
 if ! Chef::Recipe::Ec2DnsServer.valid_hostname?(node.name)

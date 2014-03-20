@@ -61,7 +61,7 @@ action :create do
       refresh_time: new_resource.refresh_time,
       retry_time: new_resource.retry_time,
       expire_time: new_resource.expire_time,
-      min_ttl: new_resource.min_ttl
+      nxdomain_ttl: new_resource.nxdomain_ttl
     )
     action :nothing
   end
@@ -104,7 +104,7 @@ action :create do
       refresh_time: new_resource.refresh_time,
       retry_time: new_resource.retry_time,
       expire_time: new_resource.expire_time,
-      min_ttl: new_resource.min_ttl
+      nxdomain_ttl: new_resource.nxdomain_ttl
     )
     notifies :create, "template[#{new_resource.path}]"
   end
