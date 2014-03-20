@@ -73,12 +73,12 @@ node['ec2dnsserver']['zones'].each do |zone, zone_conf|
   ec2dnsserver_zone zone do
     vpcs zone_conf['vpcs'] if zone_conf['vpcs']
     stub zone_conf['stub'] || false
-    ptr zone_conf['ptr_zone']
     if zone_conf['suffix']
       suffix zone_conf['suffix']
     else
       soa_zone zone_conf['soa_zone']
     end
+    ptr zone_conf['ptr_zone'] unless zone_conf['ptr_zone'].nil?
     static_records zone_conf['static_records'] if zone_conf['static_records']
     avoid_subnets node['ec2dnsserver']['avoid_subnets']
     contact_email node['ec2dnsserver']['contact_email']
