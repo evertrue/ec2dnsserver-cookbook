@@ -79,7 +79,7 @@ node['ec2dnsserver']['zones'].each do |zone, zone_conf|
     else
       soa_zone zone_conf['soa_zone']
     end
-    static_records zone_conf['static_records']
+    static_records zone_conf['static_records'] if zone_conf['static_records']
     avoid_subnets node['ec2dnsserver']['avoid_subnets']
     contact_email node['ec2dnsserver']['contact_email']
     notifies :run, 'execute[reload_zones]'
