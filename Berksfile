@@ -2,7 +2,10 @@ source 'http://api.berkshelf.com'
 
 metadata
 
-cookbook 'et_fog', git: 'git@github.com:evertrue/et_fog-cookbook.git', tag: 'v1.0.3'
+cookbook  'et_fog',
+          git: 'git@github.com:evertrue/et_fog-cookbook.git',
+          tag: 'v1.0.4'
+# cookbook 'et_fog', path: '../et_fog'
 
 # et_base was necessary here to get a very specific kind of package-related
 # failure to occur during testing (apt-repos would get updated without

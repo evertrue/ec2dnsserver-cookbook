@@ -8,4 +8,4 @@ long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
 version          '1.5.0'
 
 depends 'build-essential'
-depends 'et_fog', '= 1.0.3'
+depends 'et_fog', '>= 1.0.4'
