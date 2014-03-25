@@ -18,13 +18,13 @@ describe 'Bind Service' do
 end
 
 describe 'Zone Data' do
-  describe command('dig SOA priv.evertrue.com @localhost') do
+  describe command('dig SOA priv.yourdomain.local @localhost') do
     it { should return_stdout(/status: NOERROR/) }
-    it { should return_stdout(/hostmaster\.evertrue\.com\./) }
+    it { should return_stdout(/hostmaster\.yourdomain\.local\./) }
   end
 
   describe file('/etc/bind/named.conf.local') do
-    it { should contain 'zone "priv.evertrue.com" {' }
+    it { should contain 'zone "priv.yourdomain.local" {' }
     it { should contain 'zone "10.in-addr.arpa" {' }
   end
 
@@ -39,26 +39,31 @@ describe 'Zone Data' do
     it { should contain '/var/log/named/named.log;BindLog' }
   end
 
-  describe file('/etc/bind/db.priv.evertrue.com') do
-    it { should contain '$ORIGIN priv.evertrue.com' }
+  describe file('/etc/bind/db.priv.yourdomain.local') do
+    it { should contain '$ORIGIN priv.yourdomain.local' }
     it { should contain ' NS ' }
     it { should contain ' IN A 10.' }
   end
 end
 
 describe 'Overrides' do
-  describe command('dig +short test-cookbook-host.evertrue.com '\
-    '@localhost') do
-    it { should return_stdout('10.0.5.177') }
-  end
-
-  describe command('dig +short test-value-host.evertrue.com '\
+  describe command('dig +short test-value-host.yourdomain.local '\
     '@localhost') do
     it { should return_stdout('1.1.1.1') }
   end
 
-  describe command('dig +short stage-storm.priv.evertrue.com '\
+  describe command('dig +short stage-storm.priv.yourdomain.local '\
     '@localhost') do
-    it { should return_stdout('stage-ops-haproxy-1b.priv.evertrue.com.') }
+    it { should return_stdout('stage-ops-haproxy-1b.priv.yourdomain.local.') }
+  end
+end
+
+describe 'Company specific overrides' do
+  # These overrides require that your Amazon cluster actually contain specific
+  # servers meeting the search requirements (defined in .kitchen.yml).  You
+  # will need to set the IP below to match the IP of your real instances.
+  describe command('dig +short test-cookbook-host.yourdomain.local '\
+    '@localhost') do
+    it { should return_stdout('10.0.5.177') } # <-- SET THIS IP
   end
 end

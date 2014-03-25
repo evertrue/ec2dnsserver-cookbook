@@ -4,9 +4,8 @@ driver_config:
   require_chef_omnibus: true
 provisioner:
   name: chef_zero
-  environments_path: '.chef-zero/environments'
-  nodes_path: '.chef-zero/nodes'
-  data_bags_path: '.chef-zero/data_bags'
+  client_rb:
+    environment: 'stage'
 # driver:
 #   name: ec2
 #   require_chef_omnibus: true
@@ -40,7 +39,6 @@ platforms:
 suites:
 - name: default
   run_list: ['recipe[ec2dnsserver]']
-  data_bags_path: ../../server-chef/data_bags
   encrypted_data_bag_secret_key_path: <%= ENV['HOME'] %>/.chef/encrypted_data_bag_secret
   attributes:
     ec2:
@@ -49,19 +47,45 @@ suites:
         '00:00:00:00:00:00':
           vpc_ipv4_cidr_block: 10.99.0.0/16
     ec2dnsserver:
-      contact_email: devops@evertrue.com
+      contact_email: 'hostmaster@yourdomain.local'
       recursion_clients:
         - 192.168.19.0/24
       avoid_subnets:
-        - subnet-d97dcfb2
         - subnet-af7dcfc4
-        - subnet-b07dcfdb
         - subnet-817dcfea
-      vpc: vpc-ca7dcfa1
+        - subnet-b07dcfdb
+        - subnet-d97dcfb2
+        - subnet-681bd603
+        - subnet-7a1bd611
+        - subnet-741bd61f
+        - subnet-461bd62d
       zones:
-        priv.evertrue.com:
+        vagrantup.com: {}
+        priv.yourdomain.local:
           ptr_zone: false
-          suffix: priv.evertrue.com
+          ns_zone: vagrantup.com
+          static_records:
+            stage-storm:
+              cookbook: et_ops_haproxy
+          vpcs:
+          - vpc-1e45b27b
+          - vpc-9318d5f8
         10.in-addr.arpa:
           ptr_zone: true
-          suffix: priv.evertrue.com
+          suffix: priv.yourdomain.local
+          ns_zone: vagrantup.com
+          vpcs:
+          - vpc-1e45b27b
+          - vpc-9318d5f8
+        test-cookbook-host.yourdomain.local:
+          stub: true
+          ns_zone: vagrantup.com
+          static_records:
+            cookbook: et_ops_haproxy
+        test-value-host.yourdomain.local:
+          stub: true
+          ns_zone: vagrantup.com
+          static_records:
+            value: 1.1.1.1
+            type: A
+

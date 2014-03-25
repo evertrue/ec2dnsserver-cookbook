@@ -1,0 +1,14 @@
+{
+  "name": "stage",
+  "description": "The staging environment",
+  "cookbook_versions": {
+  },
+  "json_class": "Chef::Environment",
+  "chef_type": "environment",
+  "default_attributes": {
+  },
+  "override_attributes": {
+    "chef_env_long_name": "staging",
+    "ec2dnsserver": {}
+  }
+}
