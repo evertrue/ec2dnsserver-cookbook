@@ -1,3 +1,7 @@
+## 2.0.1:
+
+* Explicitly specify localhost in dig test
+
 ## 2.0.0:
 
 * Don't put file logging properties in the query syslog config
