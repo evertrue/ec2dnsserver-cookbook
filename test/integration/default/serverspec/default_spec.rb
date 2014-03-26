@@ -64,6 +64,10 @@ describe 'Company specific overrides' do
   # will need to set the IP below to match the IP of your real instances.
   describe command('dig +short test-cookbook-host.yourdomain.local '\
     '@localhost') do
-    it { should return_stdout('10.0.5.177') } # <-- SET THIS IP
+    it { should return_stdout(/^10.0.5.177$/) } # <-- SET THIS IP
+  end
+
+  describe command('dig +short -x 10.0.5.177') do # <-- SET THIS IP, too!
+    it { should return_stdout(/^stage-ops-haproxy-1b.priv.evertrue.com.$/) }
   end
 end

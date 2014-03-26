@@ -15,6 +15,7 @@
 * Bump et_fog 1.0.4
 * Create docs!
 * Broke compatibility with old zones hash format
+* Add reverse DNS test; Use regex for test response instead of string matching
 
 ## 1.5.0:
 
