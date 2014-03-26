@@ -1,3 +1,21 @@
+## 2.0.0:
+
+* Don't put file logging properties in the query syslog config
+* Convert to berkshelf 3
+* Remove now-meaningless `node['ec2dnsserver']['vpc']` attribute
+* Rename min_ttl to the more meaningful nxdomain_ttl
+* Remove requirement that path be specified in resource
+* Duplicate the full path under the template cache path in order to minimize the chances of conflict if a file name is re-used for whatever reason.
+* Static records are not really required so the default recipe shouldn't fail if they're missing from the attributes
+* Remove options that are not valid in syslog logs from syslog query logger
+* Fix format of file parameter in query log config
+* ptr is an optional resource parameter so it should also be an optional node attribute
+* Don't handle undefined stub attribute in a way that is dumb
+* Clean up handling of DNS suffixes in zones other than the parent zone of the name server
+* Bump et_fog 1.0.4
+* Create docs!
+* Broke compatibility with old zones hash format
+
 ## 1.5.0:
 
 * Support multiple VPCs per DNS server and no VPC at all
