@@ -17,6 +17,19 @@ describe 'Bind Service' do
   end
 end
 
+describe 'Bind Config' do
+  describe file('/etc/bind/named.conf.options') do
+    # WARNING: This is totally dependent on the actual subnet address of
+    # EverTrue's actual VPC.  It won't play well for other users.
+    it do should contain <<EOS
+  forwarders {
+    10.99.0.2;
+  };
+EOS
+    end
+  end
+end
+
 describe 'Zone Data' do
   describe command('dig SOA priv.yourdomain.local @localhost') do
     it { should return_stdout(/status: NOERROR/) }
@@ -67,7 +80,7 @@ describe 'Company specific overrides' do
     it { should return_stdout(/^10.0.5.177$/) } # <-- SET THIS IP
   end
 
-  describe command('dig +short -x 10.0.5.177') do # <-- SET THIS IP, too!
+  describe command('dig +short -x 10.0.5.177 @localhost') do # <-- SET THIS IP, too!
     it { should return_stdout(/^stage-ops-haproxy-1b.priv.evertrue.com.$/) }
   end
 end
