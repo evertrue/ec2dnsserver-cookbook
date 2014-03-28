@@ -1,3 +1,7 @@
+## 2.0.2:
+
+* Delete set-bind-forwarders DHCP hook
+
 ## 2.0.1:
 
 * Explicitly specify localhost in dig test

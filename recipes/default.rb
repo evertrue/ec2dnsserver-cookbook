@@ -24,22 +24,8 @@ service node['ec2dnsserver']['service_name'] do
   action :nothing
 end
 
-# The following should really only be necessary to get this to
-# converge on a vagrant box.
-directory '/etc/dhcp/dhclient-exit-hooks.d' do
-  owner 'root'
-  group 'root'
-  mode 00755
-  action :create
-  recursive true
-  not_if { node['ec2'] }
-end
-
-template '/etc/dhcp/dhclient-exit-hooks.d/set-bind-forwarders' do
-  source 'set-bind-forwarders.erb'
-  owner 'root'
-  group 'root'
-  mode 00644
+file '/etc/dhcp/dhclient-exit-hooks.d/set-bind-forwarders' do
+  action :delete
 end
 
 log "ec2 hash: #{node['ec2'].inspect}" do
