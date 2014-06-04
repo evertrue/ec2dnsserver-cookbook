@@ -1,3 +1,7 @@
+## 2.1.0:
+
+* Enable zone transfers by IP
+
 ## 2.0.2:
 
 * Delete set-bind-forwarders DHCP hook
