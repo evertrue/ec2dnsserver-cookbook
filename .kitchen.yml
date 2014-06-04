@@ -48,6 +48,8 @@ suites:
           vpc_ipv4_cidr_block: 10.99.0.0/16
     ec2dnsserver:
       contact_email: 'hostmaster@yourdomain.local'
+      slaves:
+      - 4.5.6.7
       recursion_clients:
         - 192.168.19.0/24
       avoid_subnets:
@@ -67,6 +69,8 @@ suites:
           static_records:
             stage-storm:
               cookbook: et_ops_haproxy
+          slaves:
+          - 1.2.3.4
           vpcs:
           - vpc-1e45b27b
           - vpc-9318d5f8

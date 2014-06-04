@@ -4,6 +4,21 @@
 <% node['ec2dnsserver']['zones'].each do |zone,zone_conf| -%>
 zone "<%= zone %>" {
   type master;
+  <%
+    if zone_conf['slaves'] &&
+      !zone_conf['slaves'].empty?
+  -%>
+  allow-transfer {
+  <% zone_conf['slaves'].each do |slave| -%>
+    <%= slave %>;
+  <% end -%>
+  };
+  also-notify {
+  <% zone_conf['slaves'].each do |slave| -%>
+    <%= slave %>;
+  <% end -%>
+  };
+  <% end -%>
   file "<%= node['ec2dnsserver']['zones_dir'] %>/db.<%= zone %>";
 };
 

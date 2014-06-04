@@ -1,7 +1,26 @@
 options {
   directory "<%= node['ec2dnsserver']['cache_dir'] %>";
   version "undisclosed";
-  allow-transfer { "none"; };
+  allow-transfer {
+  <% if node['ec2dnsserver']['slaves'].empty? -%>
+    "none";
+    <% 
+    else
+      node['ec2dnsserver']['slaves'].each do |slave|
+    -%>
+    <%= slave %>;
+    <%
+      end
+    end
+    -%>
+  };
+  <% unless node['ec2dnsserver']['slaves'].empty? -%>
+  also-notify {
+  <% node['ec2dnsserver']['slaves'].each do |slave| -%>
+    <%= slave %>;
+  <% end -%>
+  };
+  <% end -%>
   allow-recursion {
     10/8;
     localnets;

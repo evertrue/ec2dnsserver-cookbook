@@ -26,6 +26,7 @@ default['ec2dnsserver']['service_name'] = value_for_platform(
     'default' => 'named'
   }
 )
+default['ec2dnsserver']['slaves'] = []
 default['ec2dnsserver']['zones'] = []
 default['ec2dnsserver']['avoid_subnets'] = []
 
