@@ -1,5 +1,5 @@
 {
-  "name": "stage-ops-haproxy-1b",
+  "name": "stage-ops-haproxy-1c",
   "chef_environment": "stage",
   "automatic": {
     "recipes": [
