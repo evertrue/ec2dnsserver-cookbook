@@ -1,3 +1,7 @@
+## 2.1.1:
+
+* Fixed OR code to correctly set record types on static records
+
 ## 2.1.0:
 
 * Enable zone transfers by IP
