@@ -69,6 +69,11 @@ suites:
           static_records:
             stage-storm:
               cookbook: et_ops_haproxy
+            some-host:
+              value: 1.2.3.4
+              type: A
+            some-other-host:
+              value: foo-bar
           slaves:
           - 1.2.3.4
           vpcs:

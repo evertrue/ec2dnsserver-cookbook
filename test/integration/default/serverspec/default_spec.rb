@@ -53,9 +53,15 @@ describe 'Zone Data' do
   end
 
   describe file('/etc/bind/db.priv.yourdomain.local') do
-    it { should contain '$ORIGIN priv.yourdomain.local' }
-    it { should contain ' NS ' }
-    it { should contain ' IN A 10.' }
+    [
+      '$ORIGIN priv.yourdomain.local',
+      ' NS ',
+      ' IN A 10.',
+      'some-other-host IN CNAME foo-bar',
+      'some-host IN A 1.2.3.4'
+    ].each do |search_str|
+      it { should contain search_str }
+    end
   end
 end
 
