@@ -169,7 +169,7 @@ class Chef::Recipe::Ec2DnsServer
         else
           h[rr] = { 'val' => node_by_search_data(rr_data) }
         end
-        h[rr]['type'] = 'CNAME'
+        h[rr]['type'] = rr_data['type'] || 'CNAME'
       end
     end
 
