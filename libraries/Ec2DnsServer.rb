@@ -51,22 +51,18 @@ class Chef::Recipe::Ec2DnsServer
     Chef::Log.info('Avoiding these subnets: ' +
       options['avoid_subnets'].join(',')) unless @avoid_subnets == []
 
-    h = {}
-    unless @stub
-      ec2_servers(filter).map do |s|
-        if s.tags['Name']
-          server_ip = server_obj_ip(s)
-          if server_ip.nil?
-            Chef::Log.warn("#{s.tags['Name']} has no IP")
-          else
-            h[s.tags['Name']] = {
+    h = if @stub
+          {}
+        else
+          ec2_servers(filter).each_with_object({}) do |s, m|
+            server_ip = server_obj_ip(s)
+            next unless server_ip
+            m[s.tags['Name']] = {
               'type' => 'A',
               'val' => server_ip
             }
           end
         end
-      end
-    end
 
     h.merge!(
       static_record_nodenames(
@@ -135,10 +131,6 @@ class Chef::Recipe::Ec2DnsServer
     connection.servers.all(filter)
   end
 
-  def ec2_network_interfaces(filter = {})
-    connection.network_interfaces.all(filter).first
-  end
-
   def static_record_nodenames(static_records = {})
     # The purpose of this clunky function is to provide, essentially, DNS
     # overrides.
@@ -181,16 +173,35 @@ class Chef::Recipe::Ec2DnsServer
     server_obj_ip(server)
   end
 
+  def non_public_interfaces(server)
+    server.network_interfaces.reject do |ni|
+      @avoid_subnets.include?(ni['subnetId']) || ni == {}
+    end
+  end
+
+  def ec2_network_interfaces
+    @ec2_network_interfaces ||= connection.network_interfaces
+  end
+
   def server_obj_ip(server)
-    server.network_interfaces.reject { |ni|
-      @avoid_subnets.include?ni['subnetId']
-    }.reject { |ni|
-      ni == {}
-    }.map { |ni|
-      # Don't avoid an IP if it's the only IP.
-      ec2_network_interfaces(
-        'network-interface-id' => ni['networkInterfaceId']
-      ).private_ip_address
-    }.first || server.private_ip_address
+    return nil unless server.tags['Name']
+    ips = non_public_interfaces(server).map do |server_ni|
+      ec2_network_interfaces.find do |global_ni|
+        (global_ni.network_interface_id == server_ni['networkInterfaceId']) &&
+        global_ni.private_ip_address
+      end
+    end
+
+    ips.compact!
+
+    return ips.sort_by { |ni| ni.attachment['deviceIndex'] }.first
+      .private_ip_address unless ips.empty?
+
+    # If there are no private IPs outside of avoided subnets, fall back to one
+    # whatever we can find.
+    return server.private_ip_address unless server.private_ip_address.nil?
+
+    Chef::Log.warn("#{server.tags['Name']} has no private IP")
+    nil
   end
 end
