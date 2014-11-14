@@ -1,3 +1,8 @@
+## 2.1.2:
+
+* A bunch of library code cleanup
+* attempt to create host records only for the networking interface that is first according to "deviceIndex" (as opposed to first according to random)
+
 ## 2.1.1:
 
 * Fixed OR code to correctly set record types on static records
