@@ -8,7 +8,7 @@ describe 'Bind Service' do
   end
 
   describe command('dig google.com @localhost') do
-    it { should return_stdout(/status: NOERROR/) }
+    its(:stdout) { should match(/status: NOERROR/) }
   end
 
   describe service('bind9') do
@@ -32,8 +32,8 @@ end
 
 describe 'Zone Data' do
   describe command('dig SOA priv.yourdomain.local @localhost') do
-    it { should return_stdout(/status: NOERROR/) }
-    it { should return_stdout(/hostmaster\.yourdomain\.local\./) }
+    its(:stdout) { should match(/status: NOERROR/) }
+    its(:stdout) { should match(/hostmaster\.yourdomain\.local\./) }
   end
 
   describe file('/etc/bind/named.conf.local') do
@@ -68,12 +68,14 @@ end
 describe 'Overrides' do
   describe command('dig +short test-value-host.yourdomain.local '\
     '@localhost') do
-    it { should return_stdout('1.1.1.1') }
+    its(:stdout) { should match('1.1.1.1') }
   end
 
   describe command('dig +short stage-storm.priv.yourdomain.local '\
     '@localhost') do
-    it { should return_stdout(/stage-ops-haproxy-1c\.priv\.yourdomain\.local\./) }
+    its(:stdout) do
+      should match(/stage-ops-haproxy-1c\.priv\.yourdomain\.local\./)
+    end
   end
 end
 
@@ -83,10 +85,12 @@ describe 'Company specific overrides' do
   # will need to set the IP below to match the IP of your real instances.
   describe command('dig +short test-cookbook-host.yourdomain.local '\
     '@localhost') do
-    it { should return_stdout(/^10\.99\.112\.81$/) } # <-- SET THIS IP
+    its(:stdout) { should match(/^10\.99\.112\.81$/) } # <-- SET THIS IP
   end
 
   describe command('dig +short -x 10.99.112.81 @localhost') do # <-- SET THIS IP, too!
-    it { should return_stdout(/^stage-ops-haproxy-1c\.priv\.yourdomain\.local\.$/) }
+    its(:stdout) do
+      should match(/^stage-ops-haproxy-1c\.priv\.yourdomain\.local\.$/)
+    end
   end
 end
