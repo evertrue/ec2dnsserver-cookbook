@@ -1,10 +1,10 @@
 {
-  "name": "stage-ops-haproxy-1c",
+  "name": "stage-api-haproxy-1c",
   "chef_environment": "stage",
   "automatic": {
     "recipes": [
       "et_base",
-      "et_ops_haproxy"
+      "et_api_haproxy"
     ],
     "roles": [
 

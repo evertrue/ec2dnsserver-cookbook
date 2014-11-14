@@ -68,7 +68,7 @@ suites:
           ns_zone: vagrantup.com
           static_records:
             stage-storm:
-              cookbook: et_ops_haproxy
+              cookbook: et_api_haproxy
             some-host:
               value: 1.2.3.4
               type: A
@@ -90,7 +90,7 @@ suites:
           stub: true
           ns_zone: vagrantup.com
           static_records:
-            cookbook: et_ops_haproxy
+            cookbook: et_api_haproxy
         test-value-host.yourdomain.local:
           stub: true
           ns_zone: vagrantup.com
