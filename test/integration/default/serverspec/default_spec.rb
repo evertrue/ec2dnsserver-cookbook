@@ -21,7 +21,8 @@ describe 'Bind Config' do
   describe file('/etc/bind/named.conf.options') do
     # WARNING: This is totally dependent on the actual subnet address of
     # EverTrue's actual VPC.  It won't play well for other users.
-    it do should contain <<EOS
+    it do
+      should contain <<EOS
   forwarders {
     10.99.0.2;
   };
