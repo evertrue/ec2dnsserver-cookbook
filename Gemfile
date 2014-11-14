@@ -1,8 +1,30 @@
 source 'https://rubygems.org'
 
-gem 'berkshelf', '~> 3.0.0.beta'
-gem 'thor-foodcritic'
-gem 'test-kitchen', '~> 1.0', :group => :integration
-gem 'log4r'
-gem 'kitchen-vagrant', :group => :integration
-gem 'kitchen-ec2', :github => 'evertrue/kitchen-ec2', :branch => "evertrue-eherot/update_security_groups_key"
+group :test, :development do
+  gem 'rake'
+  gem 'coveralls', require: false
+end
+
+group :test do
+  gem 'chef-zero'
+  gem 'berkshelf',  '~> 3.2'
+  gem 'chefspec',   '~> 4.1'
+  gem 'foodcritic', '~> 4.0'
+  gem 'rubocop',    '~> 0.27'
+  gem 'serverspec', '~> 2.3'
+
+  gem 'fog', '~> 1.24'
+end
+
+group :test, :integration do
+  gem 'test-kitchen',
+      github: 'test-kitchen/test-kitchen',
+      tag: '459238b88ccb4219d8bcabd5a89a8adcb7391b16'
+  gem 'kitchen-ec2',
+      github: 'test-kitchen/kitchen-ec2',
+      tag: 'e7f840f927518b0f9e29914205c048a463de654e'
+end
+
+group :test, :vagrant do
+  gem 'kitchen-vagrant', '~> 0.15'
+end
