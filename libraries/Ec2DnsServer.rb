@@ -5,26 +5,24 @@ class Chef::Recipe::Ec2DnsServer
     # This determines what our external DNS source is going to be.
     if node['ec2dnsserver']['forwarders']
       # First try statically defined
-      forwarders = node['ec2dnsserver']['forwarders']
+      node['ec2dnsserver']['forwarders']
     elsif node['ec2']['network_interfaces_macs'][node['ec2']['mac']]['vpc_ipv4_cidr_block']
       # Next try to determine it programmatically based on our VPC subnet (if any)
-      forwarders = [
+      [
         Chef::Recipe::Ec2DnsServer.vpc_default_dns(
           node['ec2']['network_interfaces_macs'][node['ec2']['mac']]['vpc_ipv4_cidr_block']
         )
       ]
     else
       # This falls back to the EC2 global default
-      forwarders = ['10.0.0.2']
+      ['10.0.0.2']
     end
-
-    forwarders
   end
 
   def self.valid_hostname?(hostname)
     return false if hostname.length > 255 || hostname.scan('..').any?
 
-    hostname = hostname[0 ... -1] if hostname.index('.', -1)
+    hostname = hostname[0...-1] if hostname.index('.', -1)
 
     hostname.split('.').map do |i|
       i.size <= 63 && !(
@@ -92,30 +90,28 @@ class Chef::Recipe::Ec2DnsServer
     if rr_data['cookbook']
       result = Chef::Search::Query.new.search(
           :node,
-          "chef_environment:#{@env} AND " +
+          "chef_environment:#{@env} AND " \
           "recipes:#{rr_data['cookbook']}"
         ).first.first
 
       fail "No nodes found with cookbook #{rr_data['cookbook']}" if result.nil?
 
-      rr = result.name
+      result.name
     elsif rr_data['value']
-      rr = rr_data['value']
+      rr_data['value']
     elsif rr_data['role']
       result = Chef::Search::Query.new.search(
           :node,
-          "chef_environment:#{@env} AND " +
+          "chef_environment:#{@env} AND " \
           "roles:#{rr_data['role']}"
         ).first.first
 
       fail "No nodes found with role #{rr_data['role']}" if result.nil?
 
-      rr = result.name
+      result.name
     else
       fail "No recognized static record data: #{rr_data.inspect}"
     end
-
-    rr
   end
 
   def connection
@@ -151,29 +147,27 @@ class Chef::Recipe::Ec2DnsServer
     # zone template) containing the RR and value for nodes (or whatever)
     # specified using the static_records attribute.
 
-    h = {}
-
     if @stub
-      fail "#{@apex} requires static_records in order to be a stub" if static_records.empty?
+      fail "#{@apex} requires static_records in order to be a stub" if
+        static_records.empty?
       r = node_by_search_data(static_records)
-      h[@apex] = {
-        'val' => IPAddress.valid?(r) ? r : server_ip_by_hostname(r)
+      return {
+        @apex => {
+          'val' => (IPAddress.valid?(r) ? r : server_ip_by_hostname(r)),
+          'type' => 'A'
+        }
       }
-      h[@apex]['type'] = 'A'
-    else
-      static_records.each do |rr, rr_data|
-        Chef::Log.debug("Processing static record: " \
-          "#{rr_data.class}/#{rr}/#{rr_data.inspect}")
-        if rr_data.class == String
-          h[rr] = { 'val' => rr_data }
-        else
-          h[rr] = { 'val' => node_by_search_data(rr_data) }
-        end
-        h[rr]['type'] = rr_data['type'] || 'CNAME'
-      end
     end
-
-    h
+    static_records.each_with_object({}) do |(rr, rr_data), m|
+      Chef::Log.debug('Processing static record: ' \
+        "#{rr_data.class}/#{rr}/#{rr_data.inspect}")
+      if rr_data.class == String
+        m[rr] = { 'val' => rr_data }
+      else
+        m[rr] = { 'val' => node_by_search_data(rr_data) }
+      end
+      m[rr]['type'] = rr_data['type'] || 'CNAME'
+    end
   end
 
   def server_ip_by_hostname(hostname)
