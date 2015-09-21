@@ -1,80 +1,79 @@
 ---
-driver_plugin: vagrant
-driver_config:
+driver:
+  name: vagrant
   require_chef_omnibus: true
+
 provisioner:
   name: chef_zero
+  encrypted_data_bag_secret_key_path: <%= ENV['HOME'] %>/.chef/encrypted_data_bag_secret
   client_rb:
-    environment: 'stage'
+    environment: stage
 
 platforms:
-- name: ubuntu-12.04
-  driver_config:
-    customize:
-      cpus: 4
-      memory: 1536
-    box: opscode-ubuntu-12.04
-    box_url: https://opscode-vm-bento.s3.amazonaws.com/vagrant/opscode_ubuntu-12.04_provisionerless.box
+  - name: ubuntu-12.04
+    driver_config:
+      customize:
+        cpus: 4
+        memory: 1536
 
 suites:
-- name: default
-  run_list: ['recipe[ec2dnsserver]']
-  encrypted_data_bag_secret_key_path: <%= ENV['HOME'] %>/.chef/encrypted_data_bag_secret
-  attributes:
-    ec2:
-      mac: '00:00:00:00:00:00'
-      network_interfaces_macs:
-        '00:00:00:00:00:00':
-          vpc_ipv4_cidr_block: 10.99.0.0/16
-    ec2dnsserver:
-      contact_email: 'hostmaster@yourdomain.local'
-      slaves:
-      - 4.5.6.7
-      recursion_clients:
-        - 192.168.19.0/24
-      avoid_subnets:
-        - subnet-af7dcfc4
-        - subnet-817dcfea
-        - subnet-b07dcfdb
-        - subnet-d97dcfb2
-        - subnet-681bd603
-        - subnet-7a1bd611
-        - subnet-741bd61f
-        - subnet-461bd62d
-      zones:
-        vagrantup.com: {}
-        priv.yourdomain.local:
-          ptr_zone: false
-          ns_zone: vagrantup.com
-          static_records:
-            stage-storm:
+  - name: default
+    run_list:
+      - recipe[ec2dnsserver]
+    attributes:
+      ec2:
+        mac: '00:00:00:00:00:00'
+        network_interfaces_macs:
+          '00:00:00:00:00:00':
+            vpc_ipv4_cidr_block: 10.99.0.0/16
+      ec2dnsserver:
+        contact_email: 'hostmaster@yourdomain.local'
+        slaves:
+          - 4.5.6.7
+        recursion_clients:
+          - 192.168.19.0/24
+        avoid_subnets:
+          - subnet-af7dcfc4
+          - subnet-817dcfea
+          - subnet-b07dcfdb
+          - subnet-d97dcfb2
+          - subnet-681bd603
+          - subnet-7a1bd611
+          - subnet-741bd61f
+          - subnet-461bd62d
+        zones:
+          vagrantup.com: {}
+          priv.yourdomain.local:
+            ptr_zone: false
+            ns_zone: vagrantup.com
+            static_records:
+              stage-storm:
+                cookbook: et_api_haproxy
+              some-host:
+                value: 1.2.3.4
+                type: A
+              some-other-host:
+                value: foo-bar
+            slaves:
+              - 1.2.3.4
+            vpcs:
+              - vpc-1e45b27b
+              - vpc-9318d5f8
+          10.in-addr.arpa:
+            ptr_zone: true
+            suffix: priv.yourdomain.local
+            ns_zone: vagrantup.com
+            vpcs:
+              - vpc-1e45b27b
+              - vpc-9318d5f8
+          test-cookbook-host.yourdomain.local:
+            stub: true
+            ns_zone: vagrantup.com
+            static_records:
               cookbook: et_api_haproxy
-            some-host:
-              value: 1.2.3.4
+          test-value-host.yourdomain.local:
+            stub: true
+            ns_zone: vagrantup.com
+            static_records:
+              value: 1.1.1.1
               type: A
-            some-other-host:
-              value: foo-bar
-          slaves:
-          - 1.2.3.4
-          vpcs:
-          - vpc-1e45b27b
-          - vpc-9318d5f8
-        10.in-addr.arpa:
-          ptr_zone: true
-          suffix: priv.yourdomain.local
-          ns_zone: vagrantup.com
-          vpcs:
-          - vpc-1e45b27b
-          - vpc-9318d5f8
-        test-cookbook-host.yourdomain.local:
-          stub: true
-          ns_zone: vagrantup.com
-          static_records:
-            cookbook: et_api_haproxy
-        test-value-host.yourdomain.local:
-          stub: true
-          ns_zone: vagrantup.com
-          static_records:
-            value: 1.1.1.1
-            type: A
-
