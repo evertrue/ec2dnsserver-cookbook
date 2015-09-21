@@ -2,6 +2,9 @@
 driver:
   name: vagrant
   require_chef_omnibus: true
+  customize:
+    cpus: 4
+    memory: 1536
 
 provisioner:
   name: chef_zero
@@ -11,10 +14,6 @@ provisioner:
 
 platforms:
   - name: ubuntu-12.04
-    driver_config:
-      customize:
-        cpus: 4
-        memory: 1536
 
 suites:
   - name: default
