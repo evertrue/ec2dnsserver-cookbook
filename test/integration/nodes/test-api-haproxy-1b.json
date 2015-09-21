@@ -1,6 +1,6 @@
 {
-  "name": "stage-api-haproxy-1c",
-  "chef_environment": "stage",
+  "name": "test-api-haproxy-1c",
+  "chef_environment": "test",
   "automatic": {
     "recipes": [
       "et_base",

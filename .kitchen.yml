@@ -10,7 +10,7 @@ provisioner:
   name: chef_zero
   encrypted_data_bag_secret_key_path: <%= ENV['HOME'] %>/.chef/encrypted_data_bag_secret
   client_rb:
-    environment: stage
+    environment: test
 
 platforms:
   - name: ubuntu-12.04
@@ -47,7 +47,7 @@ suites:
             ptr_zone: false
             ns_zone: vagrantup.com
             static_records:
-              stage-storm:
+              test-storm:
                 cookbook: et_api_haproxy
               some-host:
                 value: 1.2.3.4

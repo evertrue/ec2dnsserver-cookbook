@@ -72,10 +72,10 @@ describe 'Overrides' do
     its(:stdout) { should match('1.1.1.1') }
   end
 
-  describe command('dig +short stage-storm.priv.yourdomain.local '\
+  describe command('dig +short test-storm.priv.yourdomain.local '\
     '@localhost') do
     its(:stdout) do
-      should match(/stage-api-haproxy-1c\.priv\.yourdomain\.local\./)
+      should match(/test-api-haproxy-1c\.priv\.yourdomain\.local\./)
     end
   end
 end
@@ -91,7 +91,7 @@ describe 'Company specific overrides' do
 
   describe command('dig +short -x 10.99.112.82 @localhost') do # <-- SET THIS IP, too!
     its(:stdout) do
-      should match(/^stage-api-haproxy-1c\.priv\.yourdomain\.local\.$/)
+      should match(/^test-api-haproxy-1c\.priv\.yourdomain\.local\.$/)
     end
   end
 end
