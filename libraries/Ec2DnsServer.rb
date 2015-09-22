@@ -29,7 +29,7 @@ class Chef::Recipe::Ec2DnsServer
           i.rindex('-', 0) ||
           i.index('-', -1) ||
           i.scan(/[^a-z\d-]/i).any?
-        )
+      )
     end.all?
   end
 
@@ -85,10 +85,10 @@ class Chef::Recipe::Ec2DnsServer
   def node_by_search_data(rr_data)
     if rr_data['cookbook']
       result = Chef::Search::Query.new.search(
-          :node,
-          "chef_environment:#{@env} AND " \
-          "recipes:#{rr_data['cookbook']}"
-        ).first.first
+        :node,
+        "chef_environment:#{@env} AND " \
+        "recipes:#{rr_data['cookbook']}"
+      ).first.first
 
       fail "No nodes found with cookbook #{rr_data['cookbook']}" if result.nil?
 
@@ -97,10 +97,10 @@ class Chef::Recipe::Ec2DnsServer
       rr_data['value']
     elsif rr_data['role']
       result = Chef::Search::Query.new.search(
-          :node,
-          "chef_environment:#{@env} AND " \
-          "roles:#{rr_data['role']}"
-        ).first.first
+        :node,
+        "chef_environment:#{@env} AND " \
+        "roles:#{rr_data['role']}"
+      ).first.first
 
       fail "No nodes found with role #{rr_data['role']}" if result.nil?
 

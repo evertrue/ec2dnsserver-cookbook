@@ -21,13 +21,14 @@ action :create do
     hosts = {}
 
     new_resource.vpcs.each do |vpc|
-      hosts.merge!(dns_server.get_names_with_ips(
-        apex,
-        new_resource.stub,
-        'vpc-id' => vpc,
-        'avoid_subnets' => new_resource.avoid_subnets,
-        'static_records' => new_resource.static_records
-      ))
+      hosts.merge!(
+        dns_server.get_names_with_ips(
+          apex,
+          new_resource.stub,
+          'vpc-id' => vpc,
+          'avoid_subnets' => new_resource.avoid_subnets,
+          'static_records' => new_resource.static_records
+        ))
     end
   else
     hosts = dns_server.get_names_with_ips(
@@ -123,7 +124,6 @@ action :create do
     )
     notifies :create, "template[#{path}]"
   end
-
 end
 
 action :delete do
