@@ -1,3 +1,10 @@
+## 2.1.3
+
+* Fix Chef search to accommodate chef/chef#2312
+* Move installation of `bind9` up to fix race condition ()
+* Rubocop & Test Kitchen config cleanup
+    - Still doesn’t test standalone
+
 ## 2.1.2:
 
 * A bunch of library code cleanup
