@@ -9,10 +9,10 @@
 
 fail 'This cookbook will only work on nodes in ec2' unless node['ec2']
 
+package 'bind9'
+
 include_recipe 'et_fog'
 include_recipe "ec2dnsserver::#{node['ec2dnsserver']['log']['logger']}"
-
-package 'bind9'
 
 execute 'reload_zones' do
   command 'rndc reload'
