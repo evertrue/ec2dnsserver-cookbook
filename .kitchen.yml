@@ -2,6 +2,7 @@
 driver:
   name: vagrant
   require_chef_omnibus: true
+  chef_omnibus_install_options: -d /tmp/vagrant-cache/vagrant_omnibus
   customize:
     cpus: 4
     memory: 1536
