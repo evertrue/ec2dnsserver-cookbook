@@ -87,7 +87,7 @@ class Chef::Recipe::Ec2DnsServer
       result = Chef::Search::Query.new.search(
         :node,
         "chef_environment:#{@env} AND " \
-        "recipes:#{rr_data['cookbook']}"
+        "run_list:recipe\\[#{rr_data['cookbook']}\\]"
       ).first.first
 
       fail "No nodes found with cookbook #{rr_data['cookbook']}" if result.nil?
