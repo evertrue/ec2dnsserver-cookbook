@@ -31,3 +31,5 @@ default['ec2dnsserver']['zones'] = []
 default['ec2dnsserver']['avoid_subnets'] = []
 
 default['ec2dnsserver']['recursion_clients'] = []
+
+default['ec2dnsserver']['mocking'] = false
