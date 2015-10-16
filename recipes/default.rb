@@ -24,11 +24,6 @@ package 'bind9'
 include_recipe 'et_fog'
 include_recipe "ec2dnsserver::#{node['ec2dnsserver']['log']['logger']}"
 
-execute 'reload_zones' do
-  command 'rndc reload'
-  action :nothing
-end
-
 service node['ec2dnsserver']['service_name'] do
   supports status: true, restart: true, reload: true
   action :nothing
@@ -77,21 +72,7 @@ cookbook_file "#{node['ec2dnsserver']['config_dir']}/named.conf" do
   notifies :restart, "service[#{node['ec2dnsserver']['service_name']}]"
 end
 
-node['ec2dnsserver']['zones'].each do |zone, zone_conf|
-  Chef::Log.info("Zone #{zone} using suffix #{zone_conf['suffix']}") if zone_conf['suffix']
-
-  ec2dnsserver_zone zone do
-    vpcs zone_conf['vpcs'] if zone_conf['vpcs']
-    stub zone_conf['stub'] if zone_conf['stub']
-    ptr zone_conf['ptr_zone'] unless zone_conf['ptr_zone'].nil?
-    suffix zone_conf['suffix'] if zone_conf['suffix']
-    ns_zone zone_conf['ns_zone'] if zone_conf['ns_zone']
-    static_records zone_conf['static_records'] if zone_conf['static_records']
-    avoid_subnets node['ec2dnsserver']['avoid_subnets']
-    contact_email node['ec2dnsserver']['contact_email']
-    notifies :run, 'execute[reload_zones]'
-  end
-end
+include_recipe 'ec2dnsserver::attribute_zones' if node['ec2dnsserver']['zones'].any?
 
 init_config_file = value_for_platform(
   %w(ubuntu debian) => { 'default' => '/etc/default/bind9' },
