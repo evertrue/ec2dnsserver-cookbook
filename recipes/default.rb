@@ -24,10 +24,7 @@ package 'bind9'
 include_recipe 'et_fog'
 include_recipe "ec2dnsserver::#{node['ec2dnsserver']['log']['logger']}"
 
-service node['ec2dnsserver']['service_name'] do
-  supports status: true, restart: true, reload: true
-  action :nothing
-end
+include_recipe 'ec2dnsserver::service'
 
 file '/etc/dhcp/dhclient-exit-hooks.d/set-bind-forwarders' do
   action :delete
@@ -39,22 +36,6 @@ end.run_action(:write)
 
 include_recipe 'ec2dnsserver::conf'
 include_recipe 'ec2dnsserver::attribute_zones' if node['ec2dnsserver']['zones'].any?
-
-init_config_file = value_for_platform(
-  %w(ubuntu debian) => { 'default' => '/etc/default/bind9' },
-  %w(centos redhat suse fedora amazon amazonaws) => {
-    'default' => '/etc/sysconfig/named'
-  }
-)
-
-file init_config_file do
-  if node['ec2dnsserver']['enable-ipv6']
-    content "RESOLVCONF=no\nOPTIONS=-u bind\n"
-  else
-    content "RESOLVCONF=no\nOPTIONS=\"-u bind -4\n\""
-  end
-  notifies :restart, "service[#{node['ec2dnsserver']['service_name']}]"
-end
 
 template '/etc/logrotate.d/named' do
   source 'logrotate.conf.erb'
