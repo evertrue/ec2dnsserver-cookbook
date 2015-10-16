@@ -47,10 +47,12 @@ describe Chef::Recipe::Ec2DnsServer do
     end.converge('et_ec2dnsserver::default')
   end
 
-  let(:public_ip) { '10.99.1.1' }
-
   # Set our constants
   let(:vpc_cidr_block) { '10.99.0.0/16' }
+  let(:public_subnet) { '10.99.1.0/24' }
+  let(:private_subnet) { '10.99.99.0/24' }
+  let(:public_ip) { IPAddress::IPv4.new(public_subnet).first.address }
+  let(:private_ip) { IPAddress::IPv4.new(private_subnet).first.address }
 
   # Fog.mock!
   # Fog::Mock.reset
@@ -72,7 +74,7 @@ describe Chef::Recipe::Ec2DnsServer do
   let(:public_subnet_id) do
     fog_conn.create_subnet(
       vpc.id,
-      '10.99.1.0/24'
+      public_subnet
     ).data[:body]['subnet']['subnetId']
   end
 
@@ -80,7 +82,7 @@ describe Chef::Recipe::Ec2DnsServer do
   let(:private_subnet_id) do
     fog_conn.create_subnet(
       vpc.id,
-      private_subnet_cidr_block
+      private_subnet
     ).data[:body]['subnet']['subnetId']
   end
 

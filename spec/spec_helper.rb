@@ -1,6 +1,7 @@
 require 'chefspec'
 require 'chefspec/berkshelf'
 require 'fog'
+require 'ipaddress'
 # require 'rspec/mocks'
 
 require_relative '../libraries/ec2_dns_server.rb'
