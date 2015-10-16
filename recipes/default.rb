@@ -53,6 +53,7 @@ file init_config_file do
   else
     content "RESOLVCONF=no\nOPTIONS=\"-u bind -4\n\""
   end
+  notifies :restart, "service[#{node['ec2dnsserver']['service_name']}]"
 end
 
 template '/etc/logrotate.d/named' do
