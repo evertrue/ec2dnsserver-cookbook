@@ -24,6 +24,11 @@ package 'bind9'
 include_recipe 'et_fog'
 include_recipe "ec2dnsserver::#{node['ec2dnsserver']['log']['logger']}"
 
+execute 'reload_zones' do
+  command 'rndc reload'
+  action :nothing
+end
+
 include_recipe 'ec2dnsserver::service'
 
 file '/etc/dhcp/dhclient-exit-hooks.d/set-bind-forwarders' do
