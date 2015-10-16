@@ -125,10 +125,10 @@ describe Chef::Recipe::Ec2DnsServer do
     # Attach our "avoid" public network interface to one of our instances
     @fog_conn.attach_network_interface(@public_interface_id, @public_server.id, '2')
 
-    helpers.stub(:ec2_servers).and_return(@fog_conn.servers)
-    helpers.stub(:ec2_network_interfaces).and_return(@fog_conn.network_interfaces)
+    expect(helpers).to receive(:ec2_servers).and_return(@fog_conn.servers)
+    expect(helpers).to receive(:ec2_network_interfaces).and_return(@fog_conn.network_interfaces)
 
-    Chef::EncryptedDataBagItem.stub(:load).with('secrets','aws_credentials').and_return(
+    expect(Chef::EncryptedDataBagItem).to receive(:load).with('secrets','aws_credentials').and_return(
       {
         'Ec2DnsServer' => {
           'access_key_id' => 'SAMPLE_ACCESS_KEY_ID',
@@ -140,12 +140,16 @@ describe Chef::Recipe::Ec2DnsServer do
   describe 'get_names_with_ips' do
     it 'should return a hash of zone data' do
 
-      helpers.get_names_with_ips(
-        {
-          'vpc-id' => @vpc_id,
-          'avoid_subnets' => [@public_subnet_id]
-        }
-      ).should == {
+      expect(
+        helpers.get_names_with_ips(
+          'zone.apex',
+          false,
+          {
+            'vpc-id' => @vpc_id,
+            'avoid_subnets' => [@public_subnet_id]
+          }
+        )
+      ).to eq(
         @public_server.tags['Name'] => {
           'type' => 'A',
           'val' => @private_ip_1
@@ -154,7 +158,7 @@ describe Chef::Recipe::Ec2DnsServer do
           'type' => 'A',
           'val' => @private_ip_2
         }
-      }
+      )
     end
   end
 end
