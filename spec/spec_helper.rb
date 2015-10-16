@@ -3,7 +3,7 @@ require 'chefspec/berkshelf'
 require 'fog'
 # require 'rspec/mocks'
 
-require_relative '../libraries/Ec2DnsServer.rb'
+require_relative '../libraries/ec2_dns_server.rb'
 
 RSpec.configure do |config|
   config.before(:each) do
