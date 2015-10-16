@@ -37,41 +37,7 @@ log "ec2 hash: #{node['ec2'].inspect}" do
   level :info
 end.run_action(:write)
 
-forwarders = Ec2DnsServer.forwarders(node)
-
-Chef::Log.info("Forwarders: #{forwarders}")
-
-template "#{node['ec2dnsserver']['config_dir']}/named.conf.options" do
-  source 'named.conf.options.erb'
-  owner 'root'
-  group 'root'
-  mode 00644
-  notifies :restart, "service[#{node['ec2dnsserver']['service_name']}]"
-  variables(forwarders: forwarders)
-end
-
-template "#{node['ec2dnsserver']['config_dir']}/named.conf.local" do
-  notifies :restart, "service[#{node['ec2dnsserver']['service_name']}]"
-  variables(
-    zones: node['ec2dnsserver']['zones'].reject do |_zone, zone_conf|
-      zone_conf['type'] && zone_conf['type'] != 'master'
-    end
-  )
-end
-
-template "#{node['ec2dnsserver']['config_dir']}/named.conf.remote" do
-  notifies :restart, "service[#{node['ec2dnsserver']['service_name']}]"
-  variables(
-    zones: node['ec2dnsserver']['zones'].select do |_zone, zone_conf|
-      zone_conf['type'] && zone_conf['type'] != 'master'
-    end
-  )
-end
-
-cookbook_file "#{node['ec2dnsserver']['config_dir']}/named.conf" do
-  notifies :restart, "service[#{node['ec2dnsserver']['service_name']}]"
-end
-
+include_recipe 'ec2dnsserver::conf'
 include_recipe 'ec2dnsserver::attribute_zones' if node['ec2dnsserver']['zones'].any?
 
 init_config_file = value_for_platform(
