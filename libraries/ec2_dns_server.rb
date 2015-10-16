@@ -54,10 +54,10 @@ class Chef::Recipe::Ec2DnsServer
     h = if @stub
           {}
         else
-          ec2_servers(filter).each_with_object({}) do |s, m|
-            server_ip = server_obj_ip(s)
+          ec2_servers(filter).each_with_object({}) do |server, memo|
+            server_ip = server_obj_ip(server)
             next unless server_ip
-            m[s.tags['Name']] = {
+            memo[server.tags['Name']] = {
               'type' => 'A',
               'val' => server_ip
             }
