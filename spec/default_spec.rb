@@ -98,7 +98,7 @@ describe Chef::Recipe::Ec2DnsServer do
   end
 
   describe '#get_names_with_ips' do
-    context 'host with only public IPs' do
+    context 'host with only public ("avoid") IPs' do
       before(:each) do
         public_server = fog_conn.servers.create
         public_server.wait_for { ready? }
@@ -113,9 +113,10 @@ describe Chef::Recipe::Ec2DnsServer do
           '1'
         )
       end
-      # A public IP is expected here because, lacking any private IPs to list,
+      # A public IP is expected here because, lacking any non-excluded IPs to list,
       # the server_obj_ip falls back to server.private_ip_address which ends up
-      # being the public IP because Fog mocking is not that smart.
+      # being the public IP because Fog mocking doesn't understand that
+      # 'avoid_subnets' refers to public interfaces.
       it 'return a hash with one public IP record' do
         expect(
           helpers.get_names_with_ips(
