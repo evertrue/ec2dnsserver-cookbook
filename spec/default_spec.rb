@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'byebug'
 
 describe 'et_ec2dnsserver::default' do
   let(:chef_run) do
@@ -85,8 +86,7 @@ describe Chef::Recipe::Ec2DnsServer do
     @vpc_cidr_block = '10.99.0.0/16'
 
     @private_subnet_cidr_block = '10.99.2.0/24'
-    @private_ip_1 = '10.99.2.2'
-    @private_ip_2 = '10.99.2.3'
+    @private_ip = '10.99.2.2'
 
     @public_subnet_cidr_block = '10.99.1.0/24'
     @public_ip = '10.99.1.1'
@@ -102,21 +102,21 @@ describe Chef::Recipe::Ec2DnsServer do
     # Create a subnet in our mock VPC (this will be our private subnet)
     @private_subnet_id = @fog_conn.create_subnet(@vpc_id, @private_subnet_cidr_block).data[:body]['subnet']['subnetId']
 
-    # Create a mock public network Interface
+    # Create a mock public-subnet network Interface
     @public_interface_id = @fog_conn.create_network_interface(
       @public_subnet_id,
       'PrivateIpAddress' => @public_ip
     ).data[:body]['networkInterface']['networkInterfaceId']
 
+    # Create a mock private-subnet network Interface
+    @private_interface_id = @fog_conn.create_network_interface(
+      @private_subnet_id,
+      'PrivateIpAddress' => @private_ip
+    ).data[:body]['networkInterface']['networkInterfaceId']
+
     # Create some servers
-    @public_server = @fog_conn.servers.create(
-      'SubnetId' => @private_subnet_id,
-      'PrivateIpAddress' => @private_ip_1
-    )
-    @private_server = @fog_conn.servers.create(
-      'SubnetId' => @private_subnet_id,
-      'PrivateIpAddress' => @private_ip_2
-    )
+    @public_server = @fog_conn.servers.create
+    @private_server = @fog_conn.servers.create
 
     @public_server.wait_for { ready? }
     @private_server.wait_for { ready? }
@@ -124,13 +124,16 @@ describe Chef::Recipe::Ec2DnsServer do
     @fog_conn.create_tags(@public_server.id, 'Name' => 'node-public')
     @fog_conn.create_tags(@private_server.id, 'Name' => 'node-private')
 
-    # Attach our "avoid" public network interface to one of our instances
-    @fog_conn.attach_network_interface(@public_interface_id, @public_server.id, '2')
+    # Attach our "avoid" public-subnet network interface to one of our instances
+    @fog_conn.attach_network_interface(@public_interface_id, @public_server.id, '1')
 
-    expect(helpers).to receive(:ec2_servers).and_return(@fog_conn.servers)
-    expect(helpers).to receive(:ec2_network_interfaces).and_return(@fog_conn.network_interfaces)
+    # Attach our private interface to one of our instances
+    @fog_conn.attach_network_interface(@private_interface_id, @private_server.id, '1')
 
-    expect(Chef::EncryptedDataBagItem).to receive(:load).with('secrets', 'aws_credentials').and_return(
+    allow(helpers).to receive(:ec2_servers).and_return(@fog_conn.servers)
+    allow(helpers).to receive(:ec2_network_interfaces).and_return(@fog_conn.network_interfaces)
+
+    allow(Chef::EncryptedDataBagItem).to receive(:load).with('secrets', 'aws_credentials').and_return(
       'Ec2DnsServer' => {
         'access_key_id' => 'SAMPLE_ACCESS_KEY_ID',
         'secret_access_key' => 'SECRET_ACCESS_KEY'
@@ -139,7 +142,10 @@ describe Chef::Recipe::Ec2DnsServer do
   end
 
   describe 'get_names_with_ips' do
-    it 'should return a hash of zone data' do
+    # A public IP is expected here because, lacking any private IPs to list,
+    # the server_obj_ip falls back to server.private_ip_address which ends up
+    # being the public IP because Fog mocking is not that smart.
+    it 'should return a hash of zone data with one public and one private IP' do
       expect(
         helpers.get_names_with_ips(
           'zone.apex',
@@ -150,11 +156,11 @@ describe Chef::Recipe::Ec2DnsServer do
       ).to eq(
         @public_server.tags['Name'] => {
           'type' => 'A',
-          'val' => @private_ip_1
+          'val' => @public_ip
         },
         @private_server.tags['Name'] => {
           'type' => 'A',
-          'val' => @private_ip_2
+          'val' => @private_ip
         }
       )
     end
