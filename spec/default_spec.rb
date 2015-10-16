@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe 'et_ec2dnsserver::default' do
-  let (:chef_run) do
+  let(:chef_run) do
     # This witchcraft allows us to use the include_recipe resource more than
     # once in a single recipe.
     @included_recipes = []
@@ -45,13 +45,18 @@ describe 'et_ec2dnsserver::default' do
 end
 
 describe Chef::Recipe::Ec2DnsServer do
-  node = {
-    'ec2dnsserver' => {
-      'aws_api_user' => 'Ec2DnsServer'
-    }
-  }
-  let (:helpers){ Chef::Recipe::Ec2DnsServer.new(node,'stage') }
-  let (:chef_run) do
+  let(:helpers) do
+    Chef::Recipe::Ec2DnsServer.new(
+      {
+        'ec2dnsserver' => {
+          'aws_api_user' => 'Ec2DnsServer'
+        }
+      },
+      'stage'
+    )
+  end
+
+  let(:chef_run) do
     # This witchcraft allows us to use the include_recipe resource more than
     # once in a single recipe.
     @included_recipes = []
@@ -66,13 +71,14 @@ describe Chef::Recipe::Ec2DnsServer do
       node.set['platform_family'] = 'debian'
     end.converge('et_ec2dnsserver::default')
   end
+
   before do
     # Fog.mock!
     # Fog::Mock.reset
     @fog_conn = Fog::Compute.new(
-      :provider => 'AWS',
-      :aws_access_key_id => 'MOCK_ACCESS_KEY',
-      :aws_secret_access_key => 'MOCK_SECRET_KEY'
+      provider: 'AWS',
+      aws_access_key_id: 'MOCK_ACCESS_KEY',
+      aws_secret_access_key: 'MOCK_SECRET_KEY'
     )
 
     # Set our constants
@@ -87,9 +93,7 @@ describe Chef::Recipe::Ec2DnsServer do
 
     # Create a mock VPC and grab its ID
     @fog_conn.create_vpc(@vpc_cidr_block)
-    @vpc = @fog_conn.vpcs.find { |v|
-      v.cidr_block == @vpc_cidr_block
-    }
+    @vpc = @fog_conn.vpcs.find { |v| v.cidr_block == @vpc_cidr_block }
     @vpc_id = @vpc.id
 
     # Create a subnet in our mock VPC (this will be our public subnet)
@@ -101,26 +105,24 @@ describe Chef::Recipe::Ec2DnsServer do
     # Create a mock public network Interface
     @public_interface_id = @fog_conn.create_network_interface(
       @public_subnet_id,
-      {
-        'PrivateIpAddress' => @public_ip
-      }
+      'PrivateIpAddress' => @public_ip
     ).data[:body]['networkInterface']['networkInterfaceId']
 
     # Create some servers
-    @public_server = @fog_conn.servers.create({
+    @public_server = @fog_conn.servers.create(
       'SubnetId' => @private_subnet_id,
       'PrivateIpAddress' => @private_ip_1
-    })
-    @private_server = @fog_conn.servers.create({
+    )
+    @private_server = @fog_conn.servers.create(
       'SubnetId' => @private_subnet_id,
       'PrivateIpAddress' => @private_ip_2
-    })
+    )
 
     @public_server.wait_for { ready? }
     @private_server.wait_for { ready? }
 
-    @fog_conn.create_tags(@public_server.id,{'Name'=>"node-public"})
-    @fog_conn.create_tags(@private_server.id,{'Name'=>"node-private"})
+    @fog_conn.create_tags(@public_server.id, 'Name' => 'node-public')
+    @fog_conn.create_tags(@private_server.id, 'Name' => 'node-private')
 
     # Attach our "avoid" public network interface to one of our instances
     @fog_conn.attach_network_interface(@public_interface_id, @public_server.id, '2')
@@ -128,26 +130,22 @@ describe Chef::Recipe::Ec2DnsServer do
     expect(helpers).to receive(:ec2_servers).and_return(@fog_conn.servers)
     expect(helpers).to receive(:ec2_network_interfaces).and_return(@fog_conn.network_interfaces)
 
-    expect(Chef::EncryptedDataBagItem).to receive(:load).with('secrets','aws_credentials').and_return(
-      {
-        'Ec2DnsServer' => {
-          'access_key_id' => 'SAMPLE_ACCESS_KEY_ID',
-          'secret_access_key' => 'SECRET_ACCESS_KEY'
-        }
+    expect(Chef::EncryptedDataBagItem).to receive(:load).with('secrets', 'aws_credentials').and_return(
+      'Ec2DnsServer' => {
+        'access_key_id' => 'SAMPLE_ACCESS_KEY_ID',
+        'secret_access_key' => 'SECRET_ACCESS_KEY'
       }
     )
   end
+
   describe 'get_names_with_ips' do
     it 'should return a hash of zone data' do
-
       expect(
         helpers.get_names_with_ips(
           'zone.apex',
           false,
-          {
-            'vpc-id' => @vpc_id,
-            'avoid_subnets' => [@public_subnet_id]
-          }
+          'vpc-id' => @vpc_id,
+          'avoid_subnets' => [@public_subnet_id]
         )
       ).to eq(
         @public_server.tags['Name'] => {
