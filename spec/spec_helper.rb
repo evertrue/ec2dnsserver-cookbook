@@ -12,5 +12,6 @@ RSpec.configure do |config|
   config.before(:each) do
     Fog.mock!
     Fog::Mock.reset
+    Fog::Mock.delay = 0
   end
 end
