@@ -1,5 +1,6 @@
 require 'chefspec'
 require 'chefspec/berkshelf'
+require 'hashie'
 require 'fog'
 require 'ipaddress'
 # require 'rspec/mocks'

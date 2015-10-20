@@ -20,8 +20,6 @@
 use_inline_resources
 
 action :create do
-  dns_server = Chef::Recipe::Ec2DnsServer.new(node, node.chef_environment)
-
   # In the template, the source host and the apex are both supposed
   # to end with dots in SOME places in the template. We're not going
   # to assume the recipe writer knows how we're going to deal with
@@ -29,47 +27,32 @@ action :create do
   # need it.
   apex = new_resource.apex.sub(/\.$/, '')
   source_host = new_resource.source_host.sub(/\.$/, '')
+  path = new_resource.path || "#{node['ec2dnsserver']['zones_dir']}/db.#{apex}"
 
-  if new_resource.path.nil?
-    path = "#{node['ec2dnsserver']['zones_dir']}/db.#{apex}"
-  else
-    path = new_resource.path
+  zone_options = {
+    'avoid_subnets' => new_resource.avoid_subnets,
+    'static_records' => new_resource.static_records
+  }
+
+  if new_resource.aws_access_key_id
+    zone_options[:conn_opts] = {
+      aws_access_key_id: new_resource.aws_access_key_id,
+      aws_secret_access_key: new_resource.aws_secret_access_key
+    }
   end
 
-  if !new_resource.vpcs.empty?
-    hosts = {}
+  dns_server =
+    Chef::Recipe::Ec2DnsServer.new(node.chef_environment, apex, zone_options)
+  dns_server.mock! if new_resource.mocking || node['ec2dnsserver']['mocking']
 
-    new_resource.vpcs.each do |vpc|
-      hosts.merge!(
-        dns_server.get_names_with_ips(
-          apex,
-          new_resource.stub,
-          'vpc-id' => vpc,
-          'avoid_subnets' => new_resource.avoid_subnets,
-          'static_records' => new_resource.static_records
-        ))
-    end
-  else
-    hosts = dns_server.get_names_with_ips(
-      apex,
-      new_resource.stub,
-      'avoid_subnets' => new_resource.avoid_subnets,
-      'static_records' => new_resource.static_records
-    )
-  end
+  hosts = dns_server.hosts(new_resource.stub, new_resource.vpcs)
 
-  if !new_resource.ns_zone.nil? && new_resource.ns_zone != apex
-    primary = false
-  else
-    primary = true
-  end
+  Chef::Log.debug("Zone: #{apex}")
+  Chef::Log.debug("Hosts: #{hosts.inspect}")
 
-  case primary
-  when true
-    Chef::Log.info("Zone #{apex} is a primary zone.")
-  when false
-    Chef::Log.info("Zone #{apex} is NOT a primary zone.")
-  end
+  primary = new_resource.ns_zone && new_resource.ns_zone == apex
+
+  Chef::Log.info("Zone #{apex} #{primary ? 'is' : 'is NOT'} a primary zone.")
 
   template path do
     source 'zone.erb'
@@ -96,10 +79,6 @@ action :create do
   end
 
   directory "#{Chef::Config[:file_cache_path]}/ec2dnsserver/zones_without_serials" do
-    owner 'root'
-    group 'root'
-    mode 00755
-    action :create
     recursive true
   end
 
@@ -123,7 +102,6 @@ action :create do
 
   template "#{Chef::Config[:file_cache_path]}/ec2dnsserver/zones_without_serials" + path do
     source 'zone.erb'
-    mode 00644
     variables(
       hosts: hosts,
       apex: apex,
