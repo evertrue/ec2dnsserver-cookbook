@@ -57,6 +57,7 @@ suites:
                 type: A
               some-other-host:
                 value: foo-bar
+                type: CNAME
             slaves:
               - 1.2.3.4
             vpcs:
