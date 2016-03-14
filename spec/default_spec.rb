@@ -1,5 +1,4 @@
 require 'spec_helper'
-require 'byebug'
 
 describe 'et_ec2dnsserver::default' do
   let(:chef_run) do
