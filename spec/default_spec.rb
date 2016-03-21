@@ -2,16 +2,6 @@ require 'spec_helper'
 
 describe 'et_ec2dnsserver::default' do
   let(:chef_run) do
-    # This witchcraft allows us to use the include_recipe resource more than
-    # once in a single recipe.
-    included_recipes = []
-    Chef::RunContext.any_instance.stub(:loaded_recipe?).and_return(false)
-    Chef::Recipe.any_instance.stub(:include_recipe) do |i|
-      Chef::RunContext.any_instance.stub(:loaded_recipe?).with(i).and_return(true)
-      included_recipes << i
-    end
-    Chef::RunContext.any_instance.stub(:loaded_recipes).and_return(included_recipes)
-
     ChefSpec::Runner.new do |node|
       node.set['platform_family'] = 'debian'
     end.converge('et_ec2dnsserver::default')
