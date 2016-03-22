@@ -1,3 +1,9 @@
+# CHANGELOG for ec2dnsserver
+
+## 2.2.0
+
+* Add the ability to handle zone types besides "master"
+
 ## 2.1.3
 
 * Fix Chef search to accommodate chef/chef#2312
