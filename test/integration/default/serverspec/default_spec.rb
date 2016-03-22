@@ -48,6 +48,18 @@ describe 'Zone Data' do
     it { should contain '/var/cache/bind' }
   end
 
+  describe file('/etc/bind/named.conf.remote') do
+    it do
+      should contain(
+        'zone "testforwardzone" IN {
+  type forward;
+  forward only;
+  forwarders { 127.0.0.1 port 8600 };
+};'
+      )
+    end
+  end
+
   describe file('/etc/rsyslog.d/25-named.conf') do
     it { should contain '$DirGroup bind' }
     it { should contain '/var/log/named/named.log;BindLog' }
