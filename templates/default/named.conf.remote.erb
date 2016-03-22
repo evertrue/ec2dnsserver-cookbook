@@ -1,0 +1,8 @@
+<% @zones.each do |zone, zone_conf| -%>
+zone "<%= zone %>" IN {
+<% zone_conf.each do |key, val| -%>
+  <%= key %> <%= val %>;
+<% end -%>
+};
+
+<% end -%>

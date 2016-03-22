@@ -46,10 +46,24 @@ template "#{node['ec2dnsserver']['config_dir']}/named.conf.options" do
 end
 
 template "#{node['ec2dnsserver']['config_dir']}/named.conf.local" do
-  source 'named.conf.local.erb'
-  owner 'root'
-  group 'root'
-  mode 00644
+  notifies :restart, "service[#{node['ec2dnsserver']['service_name']}]"
+  variables(
+    zones: node['ec2dnsserver']['zones'].reject do |_zone, zone_conf|
+      zone_conf['type'] && zone_conf['type'] != 'master'
+    end
+  )
+end
+
+template "#{node['ec2dnsserver']['config_dir']}/named.conf.remote" do
+  notifies :restart, "service[#{node['ec2dnsserver']['service_name']}]"
+  variables(
+    zones: node['ec2dnsserver']['zones'].select do |_zone, zone_conf|
+      zone_conf['type'] && zone_conf['type'] != 'master'
+    end
+  )
+end
+
+cookbook_file "#{node['ec2dnsserver']['config_dir']}/named.conf" do
   notifies :restart, "service[#{node['ec2dnsserver']['service_name']}]"
 end
 

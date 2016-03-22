@@ -1,7 +1,7 @@
 //
 // Zones file maintained by Chef.  Do not edit manually.
 //
-<% node['ec2dnsserver']['zones'].each do |zone, zone_conf| -%>
+<% @zones.each do |zone, zone_conf| -%>
 zone "<%= zone %>" {
   type master;
   <%
