@@ -75,7 +75,7 @@ describe 'Overrides' do
   describe command('dig +short test-storm.priv.yourdomain.local '\
     '@localhost') do
     its(:stdout) do
-      should match(/test-api-haproxy-1c\.priv\.yourdomain\.local\./)
+      should match(/prod-dns-1c\.priv\.yourdomain\.local\./)
     end
   end
 end
@@ -86,12 +86,12 @@ describe 'Company specific overrides' do
   # will need to set the IP below to match the IP of your real instances.
   describe command('dig +short test-cookbook-host.yourdomain.local '\
     '@localhost') do
-    its(:stdout) { should match(/^10\.99\.112\.82$/) } # <-- SET THIS IP
+    its(:stdout) { should match('10.0.6.150') } # <-- SET THIS IP
   end
 
-  describe command('dig +short -x 10.99.112.82 @localhost') do # <-- SET THIS IP, too!
+  describe command('dig +short -x 10.0.6.150 @localhost') do # <-- SET THIS IP, too!
     its(:stdout) do
-      should match(/^test-api-haproxy-1c\.priv\.yourdomain\.local\.$/)
+      should match(/^prod-dns-1c\.priv\.yourdomain\.local\.$/)
     end
   end
 end

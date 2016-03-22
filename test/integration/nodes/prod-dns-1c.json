@@ -1,0 +1,8 @@
+{
+  "name": "prod-dns-1c",
+  "chef_environment": "test",
+  "run_list": [
+    "recipe[et_base]",
+    "recipe[et_ec2dnsserver]"
+  ]
+}

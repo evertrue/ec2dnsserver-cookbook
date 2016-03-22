@@ -49,7 +49,7 @@ suites:
             ns_zone: vagrantup.com
             static_records:
               test-storm:
-                cookbook: et_api_haproxy
+                cookbook: et_ec2dnsserver
               some-host:
                 value: 1.2.3.4
                 type: A
@@ -71,7 +71,7 @@ suites:
             stub: true
             ns_zone: vagrantup.com
             static_records:
-              cookbook: et_api_haproxy
+              cookbook: et_ec2dnsserver
           test-value-host.yourdomain.local:
             stub: true
             ns_zone: vagrantup.com
