@@ -10,5 +10,7 @@ version          '2.2.1'
 issues_url 'https://github.com/evertrue/ec2dnsserver-cookbook/issues' if respond_to? :issues_url
 source_url 'https://github.com/evertrue/ec2dnsserver-cookbook/' if respond_to? :source_url
 
+supports 'ubuntu', '>= 14.04'
+
 depends 'build-essential'
 depends 'et_fog', '~> 1.0'
