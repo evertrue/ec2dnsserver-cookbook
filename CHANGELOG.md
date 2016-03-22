@@ -1,5 +1,9 @@
 # CHANGELOG for ec2dnsserver
 
+## 2.2.2
+
+* Add issues/source URLs and supports metadata
+
 ## 2.2.1
 
 * Switch to Apache v2.0 license
