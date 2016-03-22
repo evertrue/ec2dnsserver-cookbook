@@ -1,5 +1,9 @@
 # CHANGELOG for ec2dnsserver
 
+## 2.2.1
+
+* Switch to Apache v2.0 license
+
 ## 2.2.0
 
 * Add the ability to handle zone types besides "master"
