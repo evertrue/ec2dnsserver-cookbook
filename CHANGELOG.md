@@ -1,5 +1,9 @@
 # CHANGELOG for ec2dnsserver
 
+## 2.2.3
+
+* Correct accidental uploading of in-progress branch as v2.2.2 instead of working master branch
+
 ## 2.2.2
 
 * Add issues/source URLs and supports metadata
