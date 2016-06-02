@@ -1,8 +1,3 @@
-execute 'reload_zones' do
-  command 'rndc reload'
-  action :nothing
-end
-
 node['ec2dnsserver']['zones'].each do |zone, zone_conf|
   Chef::Log.info("Zone #{zone} using suffix #{zone_conf['suffix']}") if zone_conf['suffix']
 
