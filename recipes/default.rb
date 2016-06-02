@@ -26,6 +26,11 @@ include_recipe "ec2dnsserver::#{node['ec2dnsserver']['log']['logger']}"
 
 include_recipe 'ec2dnsserver::service'
 
+execute 'reload_zones' do
+  command 'rndc reload'
+  action :nothing
+end
+
 file '/etc/dhcp/dhclient-exit-hooks.d/set-bind-forwarders' do
   action :delete
 end
