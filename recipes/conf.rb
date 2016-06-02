@@ -43,7 +43,8 @@ template "#{node['ec2dnsserver']['config_dir']}/named.conf.remote" do
   notifies :restart, "service[#{node['ec2dnsserver']['service_name']}]"
   variables(
     zones: node['ec2dnsserver']['zones'].select do |_zone, zone_conf|
-      zone_conf['type'] && zone_conf['type'] != 'master'
+      zone_conf['type'] &&
+      %w(forward).include?(zone_conf['type'])
     end
   )
 end
