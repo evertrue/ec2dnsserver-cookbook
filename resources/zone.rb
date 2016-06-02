@@ -26,7 +26,7 @@ property :suffix,                [String, nil],    default: nil
 property :source_host,           String,           default: node.name
 property :ptr,                                     default: false
 property :default_ttl,           Fixnum,           default: 300
-property :contact_email,         String,                                  required: true
+property :contact_email,         String,           required: true
 property :refresh_time,          [String, Fixnum], default: '3600'
 property :retry_time,            [String, Fixnum], default: '600'
 property :expire_time,           [String, Fixnum], default: '86400'
