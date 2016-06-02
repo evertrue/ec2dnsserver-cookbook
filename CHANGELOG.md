@@ -5,6 +5,7 @@
 * Refactor ec2dnsserver_zone resource
 * Move the loading of zones from attributes to its own recipe ("attribute_zones")
 * Move service setup to its own recipe ("service")
+* Make the logic for what to include in remote conf more explanatory
 * Test Changes
     - Update spec tests to use new rspec 3 format
     - Use "let" syntax to actually scope test data correctly
