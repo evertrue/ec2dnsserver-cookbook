@@ -29,8 +29,10 @@ execute 'reload_zones' do
   action :nothing
 end
 
-service node['ec2dnsserver']['service_name'] do
-  supports status: true, restart: true, reload: true
+include_recipe 'ec2dnsserver::service'
+
+execute 'reload_zones' do
+  command 'rndc reload'
   action :nothing
 end
 
@@ -42,71 +44,8 @@ log "ec2 hash: #{node['ec2'].inspect}" do
   level :info
 end.run_action(:write)
 
-forwarders = Ec2DnsServer.forwarders(node)
-
-Chef::Log.info("Forwarders: #{forwarders}")
-
-template "#{node['ec2dnsserver']['config_dir']}/named.conf.options" do
-  source 'named.conf.options.erb'
-  owner 'root'
-  group 'root'
-  mode 00644
-  notifies :restart, "service[#{node['ec2dnsserver']['service_name']}]"
-  variables(forwarders: forwarders)
-end
-
-template "#{node['ec2dnsserver']['config_dir']}/named.conf.local" do
-  notifies :restart, "service[#{node['ec2dnsserver']['service_name']}]"
-  variables(
-    zones: node['ec2dnsserver']['zones'].reject do |_zone, zone_conf|
-      zone_conf['type'] && zone_conf['type'] != 'master'
-    end
-  )
-end
-
-template "#{node['ec2dnsserver']['config_dir']}/named.conf.remote" do
-  notifies :restart, "service[#{node['ec2dnsserver']['service_name']}]"
-  variables(
-    zones: node['ec2dnsserver']['zones'].select do |_zone, zone_conf|
-      zone_conf['type'] && zone_conf['type'] != 'master'
-    end
-  )
-end
-
-cookbook_file "#{node['ec2dnsserver']['config_dir']}/named.conf" do
-  notifies :restart, "service[#{node['ec2dnsserver']['service_name']}]"
-end
-
-node['ec2dnsserver']['zones'].each do |zone, zone_conf|
-  Chef::Log.info("Zone #{zone} using suffix #{zone_conf['suffix']}") if zone_conf['suffix']
-
-  ec2dnsserver_zone zone do
-    vpcs zone_conf['vpcs'] if zone_conf['vpcs']
-    stub zone_conf['stub'] if zone_conf['stub']
-    ptr zone_conf['ptr_zone'] unless zone_conf['ptr_zone'].nil?
-    suffix zone_conf['suffix'] if zone_conf['suffix']
-    ns_zone zone_conf['ns_zone'] if zone_conf['ns_zone']
-    static_records zone_conf['static_records'] if zone_conf['static_records']
-    avoid_subnets node['ec2dnsserver']['avoid_subnets']
-    contact_email node['ec2dnsserver']['contact_email']
-    notifies :run, 'execute[reload_zones]'
-  end
-end
-
-init_config_file = value_for_platform(
-  %w(ubuntu debian) => { 'default' => '/etc/default/bind9' },
-  %w(centos redhat suse fedora amazon amazonaws) => {
-    'default' => '/etc/sysconfig/named'
-  }
-)
-
-file init_config_file do
-  if node['ec2dnsserver']['enable-ipv6']
-    content "RESOLVCONF=no\nOPTIONS=-u bind\n"
-  else
-    content "RESOLVCONF=no\nOPTIONS=\"-u bind -4\n\""
-  end
-end
+include_recipe 'ec2dnsserver::conf'
+include_recipe 'ec2dnsserver::attribute_zones' if node['ec2dnsserver']['zones'].any?
 
 template '/etc/logrotate.d/named' do
   source 'logrotate.conf.erb'

@@ -1,12 +1,15 @@
 class Chef::Recipe::Ec2DnsServer
   require 'ipaddress'
 
+  attr_reader :apex, :env, :zone_options
+
   def self.forwarders(node)
     # This determines what our external DNS source is going to be.
+    Chef::Log.debug "Contents of node['ec2']: #{node['ec2'].inspect}"
     if node['ec2dnsserver']['forwarders']
       # First try statically defined
       node['ec2dnsserver']['forwarders']
-    elsif node['ec2']['network_interfaces_macs'][node['ec2']['mac']]['vpc_ipv4_cidr_block']
+    elsif node['ec2']['network_interfaces_macs'][node['ec2']['mac'].downcase]['vpc_ipv4_cidr_block']
       # Next try to determine it programmatically based on our VPC subnet (if any)
       [
         Chef::Recipe::Ec2DnsServer.vpc_default_dns(
@@ -38,91 +41,116 @@ class Chef::Recipe::Ec2DnsServer
     # subnet (the first is usually the gateway).  Suggestions for a more
     # "correct" way to get the default DNS are welcome/encouraged.
 
-    IPAddress::IPv4.parse_u32(IPAddress.parse(vpc_net).network_u32 + 2)
+    IPAddress::IPv4.parse_u32(IPAddress.parse(vpc_net).network_u32 + 2).address
   end
 
-  def get_names_with_ips(apex, stub, options = {})
+  def initialize(env, apex, zone_options = {})
+    @env = env
     @apex = apex
-    @stub = stub
-    filter = {}
-    filter['vpc-id'] = options['vpc-id'] if options['vpc-id']
-    @avoid_subnets = options['avoid_subnets'] || []
+    @zone_options = zone_options
+    @mocking = false
+  end
 
-    Chef::Log.info('Avoiding these subnets: ' +
-      options['avoid_subnets'].join(',')) unless @avoid_subnets == []
+  def hosts(is_stub, vpcs)
+    if is_stub
+      { 'stub' => override_record(zone_options['static_records']) }
+    elsif vpcs.any?
+      vpcs.each_with_object({}) do |vpc, m|
+        m.merge! names_with_ips('vpc-id' => vpc)
+      end
+    else
+      names_with_ips
+    end
+  end
 
-    h = if @stub
-          {}
-        else
-          ec2_servers(filter).each_with_object({}) do |s, m|
-            server_ip = server_obj_ip(s)
-            next unless server_ip
-            m[s.tags['Name']] = {
-              'type' => 'A',
-              'val' => server_ip
-            }
-          end
-        end
+  def mock!
+    @mocking = true
+  end
 
-    h.merge!(
-      static_record_nodenames(
-        (options['static_records'] || {})
-      )
-    )
+  private
 
-    Chef::Log.debug("Merged host hash for #{@apex}: #{h.inspect}")
+  def mocking?
+    @mocking
+  end
+
+  def names_with_ips(server_filter = {})
+    h = ec2_servers(server_filter)
+        .each_with_object({}) do |server, memo|
+      next unless server.tags['Name'] &&
+                  Chef::Recipe::Ec2DnsServer.valid_hostname?(server.tags['Name'])
+      server_ip = server_obj_ip(server)
+      next unless server_ip
+      memo[server.tags['Name']] = {
+        'type' => 'A',
+        'val' => server_ip
+      }
+    end
+
+    h.merge! override_records(zone_options['static_records'])
+
+    Chef::Log.debug("Merged host hash for #{apex}: #{h.inspect}")
 
     h
   end
 
-  def initialize(node = {}, env = '')
-    @node = node
-    @env = env
+  def override_record(rr_data)
+    if rr_data['value']
+      fail "No record type specified for #{rr_data['value']}" unless rr_data['type']
+      {
+        'val' => rr_data['value'],
+        'type' => rr_data['type']
+      }
+    elsif rr_data['cookbook'] || rr_data['role']
+      n = node_by_search_data(rr_data)
+      if rr_data['type'] && rr_data['type'] == 'CNAME'
+        {
+          'val' => n.name,
+          'type' => 'CNAME'
+        }
+      else
+        {
+          'val' => n['ipaddress'],
+          'type' => 'A'
+        }
+      end
+    else
+      fail "Unsupported record type: #{rr_data.inspect}"
+    end
   end
-
-  private
 
   def node_by_search_data(rr_data)
     if rr_data['cookbook']
       result = Chef::Search::Query.new.search(
         :node,
-        "chef_environment:#{@env} AND " \
+        "chef_environment:#{env} AND " \
         "run_list:recipe\\[#{rr_data['cookbook']}\\]"
       ).first.first
 
       fail "No nodes found with cookbook #{rr_data['cookbook']}" if result.nil?
 
-      result.name
-    elsif rr_data['value']
-      rr_data['value']
+      return result
     elsif rr_data['role']
       result = Chef::Search::Query.new.search(
         :node,
-        "chef_environment:#{@env} AND " \
+        "chef_environment:#{env} AND " \
         "roles:#{rr_data['role']}"
       ).first.first
 
       fail "No nodes found with role #{rr_data['role']}" if result.nil?
 
-      result.name
-    else
-      fail "No recognized static record data: #{rr_data.inspect}"
+      return result
     end
+    fail "No recognized static record data: #{rr_data.inspect}"
   end
 
   def connection
     @connection ||= begin
       require 'fog'
 
-      aws_keys = Chef::EncryptedDataBagItem.load(
-        'secrets',
-        'aws_credentials'
-      )[@node['ec2dnsserver']['aws_api_user']]
+      Fog.mock! if mocking?
 
-      @connnection = Fog::Compute.new(
-        provider: 'AWS',
-        aws_access_key_id: aws_keys['access_key_id'],
-        aws_secret_access_key: aws_keys['secret_access_key']
+      Fog::Compute::AWS.new(
+        zone_options[:conn_opts] || { use_iam_profile: true }
       )
     end
   end
@@ -131,7 +159,7 @@ class Chef::Recipe::Ec2DnsServer
     connection.servers.all(filter)
   end
 
-  def static_record_nodenames(static_records = {})
+  def override_records(data = {})
     # The purpose of this clunky function is to provide, essentially, DNS
     # overrides.
     #
@@ -139,43 +167,23 @@ class Chef::Recipe::Ec2DnsServer
     # zone template) containing the RR and value for nodes (or whatever)
     # specified using the static_records attribute.
 
-    if @stub
-      fail "#{@apex} requires static_records in order to be a stub" if
-        static_records.empty?
-      r = node_by_search_data(static_records)
-      return {
-        @apex => {
-          'val' => (IPAddress.valid?(r) ? r : server_ip_by_hostname(r)),
-          'type' => 'A'
-        }
-      }
-    end
-    static_records.each_with_object({}) do |(rr, rr_data), m|
+    return {} if data.nil?
+
+    data.each_with_object({}) do |(rr, rr_data), m|
       Chef::Log.debug('Processing static record: ' \
         "#{rr_data.class}/#{rr}/#{rr_data.inspect}")
-      if rr_data.class == String
-        m[rr] = { 'val' => rr_data }
-      else
-        m[rr] = { 'val' => node_by_search_data(rr_data) }
-      end
-      m[rr]['type'] = rr_data['type'] || 'CNAME'
+      m[rr] = override_record(rr_data)
     end
-  end
-
-  def server_ip_by_hostname(hostname)
-    server = connection.servers.all(
-      'tag-key' => 'Name',
-      'tag-value' => hostname
-    ).first
-
-    fail "Can't locate server with name #{hostname}" if server.nil?
-
-    server_obj_ip(server)
   end
 
   def non_public_interfaces(server)
+    unless zone_options['avoid_subnets'] == []
+      Chef::Log.info('Avoiding these subnets: ' +
+        zone_options['avoid_subnets'].join(','))
+    end
+
     server.network_interfaces.reject do |ni|
-      @avoid_subnets.include?(ni['subnetId']) || ni == {}
+      zone_options['avoid_subnets'].include?(ni['subnetId']) || ni == {}
     end
   end
 
@@ -184,7 +192,6 @@ class Chef::Recipe::Ec2DnsServer
   end
 
   def server_obj_ip(server)
-    return nil unless server.tags['Name']
     ips = non_public_interfaces(server).map do |server_ni|
       ec2_network_interfaces.find do |global_ni|
         (global_ni.network_interface_id == server_ni['networkInterfaceId']) &&
@@ -202,6 +209,6 @@ class Chef::Recipe::Ec2DnsServer
     return server.private_ip_address unless server.private_ip_address.nil?
 
     Chef::Log.warn("#{server.tags['Name']} has no private IP")
-    nil
+    false
   end
 end

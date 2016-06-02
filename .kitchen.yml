@@ -1,20 +1,32 @@
 ---
 driver:
-  name: vagrant
+  name: ec2
   require_chef_omnibus: true
-  chef_omnibus_install_options: -d /tmp/vagrant-cache/vagrant_omnibus
-  customize:
-    cpus: 4
-    memory: 1536
+  aws_ssh_key_id: <%= ENV['AWS_KEYPAIR_NAME'] %>
+  region: us-east-1
+  availability_zone: us-east-1e
+  security_group_ids:
+    - ci-testing
+  instance_type: c3.large
+  interface: public
+  iam_profile_name: test-ec2dnsserver
+
+transport:
+  ssh_key: <%= ENV['EC2_SSH_KEY_PATH'] %>
 
 provisioner:
   name: chef_zero
-  encrypted_data_bag_secret_key_path: <%= ENV['HOME'] %>/.chef/encrypted_data_bag_secret
   client_rb:
     environment: test
 
 platforms:
   - name: ubuntu-14.04
+    driver:
+      image_id: ami-7d7d7c17
+      tags:
+        Name: ec2dnsserver-default-ubuntu-1404
+        Type: test
+        Operator: <%= ENV['USER'] %>
 
 suites:
   - name: default
@@ -58,6 +70,7 @@ suites:
                 type: A
               some-other-host:
                 value: foo-bar
+                type: CNAME
             slaves:
               - 1.2.3.4
             vpcs:
