@@ -1,5 +1,17 @@
 # CHANGELOG for ec2dnsserver
 
+## 2.3.0
+
+* Refactor ec2dnsserver_zone resource
+* Move the loading of zones from attributes to its own recipe ("attribute_zones")
+* Move service setup to its own recipe ("service")
+* Test Changes
+    - Update spec tests to use new rspec 3 format
+    - Use "let" syntax to actually scope test data correctly
+    - Set public and private test ips using algorithms
+    - Clarify comments and text output in specs
+    - Stop using credentials to sign in to AWS API
+
 ## 2.2.3
 
 * Correct accidental uploading of in-progress branch as v2.2.2 instead of working master branch
