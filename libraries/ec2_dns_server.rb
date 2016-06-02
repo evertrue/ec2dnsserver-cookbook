@@ -147,12 +147,33 @@ class Chef::Recipe::Ec2DnsServer
     @connection ||= begin
       require 'fog'
 
-      Fog.mock! if mocking?
+      if @node['ec2dnsserver']['mocking']
+        connection = mock_servers
+      else
 
-      Fog::Compute::AWS.new(
-        zone_options[:conn_opts] || { use_iam_profile: true }
-      )
+        Fog::Compute::AWS.new(
+          zone_options[:conn_opts] || { use_iam_profile: true }
+        )
+      end
     end
+  end
+
+  def mock_servers
+    Fog.mock!
+
+    connection = Fog::Compute.new(
+      provider: 'AWS',
+      aws_access_key_id: '',
+      aws_secret_access_key: ''
+    )
+    connection.vpcs.create cidr_block: '10.0.0.0/24'
+    connection.subnets.create vpc_id: connection.vpcs.first.id, cidr_block: '10.0.0.0/24'
+    connection.servers.create(
+      tags: { Name: 'test-ops-haproxy-1b' },
+      subnet_id: connection.subnets.first.subnet_id
+    )
+
+    connection
   end
 
   def ec2_servers(filter = {})
