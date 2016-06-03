@@ -71,7 +71,9 @@ action :create do
   Chef::Log.debug("Zone: #{apex}")
   Chef::Log.debug("Hosts: #{hosts.inspect}")
 
-  primary = new_resource.ns_zone && new_resource.ns_zone == apex
+  primary = new_resource.ns_zone.nil? ||
+            new_resource.ns_zone &&
+            new_resource.ns_zone == apex
 
   Chef::Log.info("Zone #{apex} #{primary ? 'is' : 'is NOT'} a primary zone.")
 
