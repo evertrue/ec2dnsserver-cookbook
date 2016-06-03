@@ -1,5 +1,9 @@
 # CHANGELOG for ec2dnsserver
 
+## 2.3.1
+
+* HOTFIX: If ns_zone is unspecified, assume primary zone status.
+
 ## 2.3.0
 
 * Refactor ec2dnsserver_zone resource
