@@ -13,4 +13,4 @@ source_url 'https://github.com/evertrue/ec2dnsserver-cookbook/' if respond_to? :
 supports 'ubuntu', '>= 14.04'
 
 depends 'build-essential'
-depends 'et_fog', '~> 1.0'
+depends 'et_fog', '~> 4.0'
