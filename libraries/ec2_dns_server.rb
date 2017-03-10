@@ -178,7 +178,7 @@ class Chef::Recipe::Ec2DnsServer
 
   def non_public_interfaces(server)
     unless zone_options['avoid_subnets'] == []
-      Chef::Log.info('Avoiding these subnets: ' +
+      Chef::Log.debug('Avoiding these subnets: ' +
         zone_options['avoid_subnets'].join(','))
     end
 
