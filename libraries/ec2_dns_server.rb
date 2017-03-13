@@ -112,10 +112,14 @@ class Chef::Recipe::Ec2DnsServer
           'val' => n['ipaddress'],
           'type' => 'A'
         }
+      else
+        fail "#{n.name} needs an IP address if record type is not CNAME"
       end
     else
       fail "Unsupported record type: #{rr_data.inspect}"
     end
+  rescue => e
+    raise $ERROR_INFO, "rr_data #{rr_data}: #{$ERROR_INFO}", $ERROR_INFO.backtrace
   end
 
   def node_by_search_data(rr_data)
@@ -174,6 +178,8 @@ class Chef::Recipe::Ec2DnsServer
         "#{rr_data.class}/#{rr}/#{rr_data.inspect}")
       m[rr] = override_record(rr_data)
     end
+  rescue => e
+    raise $ERROR_INFO, "data #{data}: #{$ERROR_INFO}", $ERROR_INFO.backtrace
   end
 
   def non_public_interfaces(server)

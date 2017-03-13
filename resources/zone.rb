@@ -66,7 +66,15 @@ action :create do
     Chef::Recipe::Ec2DnsServer.new(node.chef_environment, apex, zone_options)
   dns_server.mock! if new_resource.mocking || node['ec2dnsserver']['mocking']
 
-  hosts = dns_server.hosts(new_resource.stub, new_resource.vpcs)
+  begin
+    hosts = dns_server.hosts(new_resource.stub, new_resource.vpcs)
+  rescue => e
+    raise $!, "stub: #{new_resource.stub}\n" \
+      "vpcs: #{new_resource.vpcs}\n" \
+      "apex: #{apex}\n" \
+      "zone_options: #{zone_options}\n" \
+      "#{$ERROR_INFO}", $ERROR_INFO.backtrace
+  end
 
   Chef::Log.debug("Zone: #{apex}")
   Chef::Log.debug("Hosts: #{hosts.inspect}")
