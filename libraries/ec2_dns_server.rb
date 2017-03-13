@@ -107,7 +107,7 @@ class Chef::Recipe::Ec2DnsServer
           'val' => n.name,
           'type' => 'CNAME'
         }
-      else
+      elsif n['ipaddress']
         {
           'val' => n['ipaddress'],
           'type' => 'A'
