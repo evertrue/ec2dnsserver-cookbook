@@ -66,6 +66,7 @@ suites:
             static_records:
               test-storm:
                 cookbook: et_ec2dnsserver
+                type: CNAME
               some-host:
                 value: 1.2.3.4
                 type: A

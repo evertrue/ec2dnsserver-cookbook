@@ -87,7 +87,7 @@ describe 'Overrides' do
   describe command('dig +short test-storm.priv.yourdomain.local '\
     '@localhost') do
     its(:stdout) do
-      should match(/prod-dns-1c\.priv\.yourdomain\.local\./)
+      should match(/prod-dns-1c-1\.priv\.yourdomain\.local\./)
     end
   end
 end
@@ -95,15 +95,21 @@ end
 describe 'Company specific overrides' do
   # These overrides require that your Amazon cluster actually contain specific
   # servers meeting the search requirements (defined in .kitchen.yml).  You
-  # will need to set the IP below to match the IP of your real instances.
+  # will need to set the IP below to match the IP of your real instances. I
+  # realize it sucks to have a company-specific test in a community cookbook but
+  # this is such a good integration test that it's hard to pass up in the name
+  # of making it easy to use.
+  #
+  # In the case of Evertrue the instance should be (as of this writing):
+  # prod-dns-1c-1 10.0.112.248
   describe command('dig +short test-cookbook-host.yourdomain.local '\
     '@localhost') do
-    its(:stdout) { should match('10.0.6.150') } # <-- SET THIS IP
+    its(:stdout) { should match('1.2.3.4') } # <-- SET THIS IP
   end
 
-  describe command('dig +short -x 10.0.6.150 @localhost') do # <-- SET THIS IP, too!
+  describe command('dig +short -x 10.0.112.248 @localhost') do # <-- SET THIS IP, too!
     its(:stdout) do
-      should match(/^prod-dns-1c\.priv\.yourdomain\.local\.$/)
+      should match(/^prod-dns-1c-1\.priv\.yourdomain\.local\.$/)
     end
   end
 end

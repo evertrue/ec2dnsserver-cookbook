@@ -1,8 +1,11 @@
 {
-  "name": "prod-dns-1c",
+  "name": "prod-dns-1c-1",
   "chef_environment": "test",
   "run_list": [
     "recipe[et_base]",
     "recipe[et_ec2dnsserver]"
-  ]
+  ],
+  "automatic": {
+    "ipaddress": "1.2.3.4"
+  }
 }
