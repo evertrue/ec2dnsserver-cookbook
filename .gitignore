@@ -17,3 +17,5 @@ bin/*
 
 .chef-zero
 .chef-zero/*
+
+LATEST_CHANGELOG.md
